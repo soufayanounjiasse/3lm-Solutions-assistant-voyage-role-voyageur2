@@ -9,12 +9,12 @@ import { UpdateReservationDto } from './dto/update-reservation.dto';
 export class ReservationController {
   constructor(private readonly reservationService: ReservationService) {}
 
-  @Post('trip/:voyageId/reservation')
+  @Post('voyages/:voyageId/reservation')
   create(@Param('voyageId') voyageId: string, @Body() dto: CreateReservationDto) {
     return this.reservationService.create(voyageId, dto);
   }
 
-  @Get('trip/:voyageId/reservation')
+  @Get('voyages/:voyageId/reservation')
   findAllByVoyage(@Param('voyageId') voyageId: string) {
     return this.reservationService.findAllByVoyage(voyageId);
   }

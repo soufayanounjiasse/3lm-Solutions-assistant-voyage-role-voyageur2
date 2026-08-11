@@ -9,12 +9,12 @@ import { UpdateDocumentDto } from './dto/update-document.dto';
 export class DocumentController {
   constructor(private readonly documentService: DocumentService) {}
 
-  @Post('trip/:voyageId/document')
+  @Post('voyages/:voyageId/document')
   create(@Param('voyageId') voyageId: string, @Body() dto: CreateDocumentDto) {
     return this.documentService.create(voyageId, dto);
   }
 
-  @Get('trip/:voyageId/document')
+  @Get('voyages/:voyageId/document')
   findAllByVoyage(@Param('voyageId') voyageId: string) {
     return this.documentService.findAllByVoyage(voyageId);
   }

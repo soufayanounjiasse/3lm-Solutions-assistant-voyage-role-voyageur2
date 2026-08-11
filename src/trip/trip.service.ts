@@ -13,13 +13,12 @@ export class TripService {
   ) {}
 
   async create(createVoyageDto: CreateVoyageDto): Promise<Voyage> {
-    const voyage = this.voyageRepository.create({
-      ...createVoyageDto,
-      userId: createVoyageDto.userId,
-      dateDebut: new Date(createVoyageDto.dateDebut),
-      dateFin: new Date(createVoyageDto.dateFin),
-      statut: VoyageStatut.A_VENIR,
-    });
+    const voyage = new Voyage();
+    voyage.userId = createVoyageDto.userId;
+    voyage.destination = createVoyageDto.destination;
+    voyage.dateDebut = new Date(createVoyageDto.dateDebut);
+    voyage.dateFin = new Date(createVoyageDto.dateFin);
+    voyage.statut = VoyageStatut.A_VENIR;
     return this.voyageRepository.save(voyage);
   }
 
@@ -32,7 +31,7 @@ export class TripService {
       });
     }
     return this.voyageRepository.find({
-       relations: { reservations: true, documents: true },
+      relations: { reservations: true, documents: true },
       order: { dateDebut: 'ASC' },
     });
   }
@@ -50,22 +49,40 @@ export class TripService {
 
   async update(id: string, updateVoyageDto: UpdateVoyageDto): Promise<Voyage> {
     const voyage = await this.findOne(id);
-    Object.assign(voyage, {
-      ...updateVoyageDto,
-      dateDebut: updateVoyageDto.dateDebut ? new Date(updateVoyageDto.dateDebut) : voyage.dateDebut,
-      dateFin: updateVoyageDto.dateFin ? new Date(updateVoyageDto.dateFin) : voyage.dateFin,
-    });
+    if (updateVoyageDto.destination !== undefined) {
+      voyage.destination = updateVoyageDto.destination;
+    }
+    if (updateVoyageDto.dateDebut !== undefined) {
+      voyage.dateDebut = new Date(updateVoyageDto.dateDebut);
+    }
+    if (updateVoyageDto.dateFin !== undefined) {
+      voyage.dateFin = new Date(updateVoyageDto.dateFin);
+    }
+    if (updateVoyageDto.userId !== undefined) {
+      voyage.userId = updateVoyageDto.userId;
+    }
     return this.voyageRepository.save(voyage);
   }
 
+  /**
+   * Annule un voyage : change le statut, archive l'enregistrement,
+   * et notifie l'utilisateur (stub en attendant l'intégration
+   * du système de notifications - Firebase Cloud Messaging prévu au CDC).
+   */
   async cancel(id: string): Promise<Voyage> {
     const voyage = await this.findOne(id);
     voyage.statut = VoyageStatut.ANNULE;
-    return this.voyageRepository.save(voyage);
+    voyage.archivedAt = new Date();
+    const saved = await this.voyageRepository.save(voyage);
+    this.notifyUserOfCancellation(saved);
+    return saved;
   }
 
-  async remove(id: string): Promise<void> {
-    const voyage = await this.findOne(id);
-    await this.voyageRepository.remove(voyage);
+  private notifyUserOfCancellation(voyage: Voyage): void {
+    // TODO: brancher sur le vrai système de notifications (FCM / email)
+    // une fois le Module 1 (Compte utilisateur) et les notifications en place.
+    console.log(
+      `[NOTIFICATION] Voyage ${voyage.id} annulé pour l'utilisateur ${voyage.userId}.`,
+    );
   }
 }

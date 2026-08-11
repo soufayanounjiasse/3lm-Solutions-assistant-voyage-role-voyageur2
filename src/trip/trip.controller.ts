@@ -1,13 +1,13 @@
 import {
-  Controller, Get, Post, Body, Patch, Param, Delete, Query,
+  Controller, Get, Post, Put, Body, Param, Delete, Query,
 } from '@nestjs/common';
 import { ApiTags, ApiQuery } from '@nestjs/swagger';
 import { TripService } from './trip.service';
 import { CreateVoyageDto } from './dto/create-voyage.dto';
 import { UpdateVoyageDto } from './dto/update-voyage.dto';
 
-@ApiTags('trip')
-@Controller('trip')
+@ApiTags('voyages')
+@Controller('voyages')
 export class TripController {
   constructor(private readonly tripService: TripService) {}
 
@@ -27,18 +27,15 @@ export class TripController {
     return this.tripService.findOne(id);
   }
 
-  @Patch(':id')
+  // Route officielle attendue par la tâche : modification complète du voyage
+  @Put(':id')
   update(@Param('id') id: string, @Body() updateVoyageDto: UpdateVoyageDto) {
     return this.tripService.update(id, updateVoyageDto);
   }
 
-  @Patch(':id/cancel')
+  // Route officielle attendue par la tâche : annulation (pas une vraie suppression)
+  @Delete(':id')
   cancel(@Param('id') id: string) {
     return this.tripService.cancel(id);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.tripService.remove(id);
   }
 }

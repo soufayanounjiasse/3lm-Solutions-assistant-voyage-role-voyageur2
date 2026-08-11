@@ -1,6 +1,6 @@
 import {
   Entity, PrimaryGeneratedColumn, Column, CreateDateColumn,
-  OneToMany, ManyToOne, JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import { Reservation } from './reservation.entity';
 import { Document } from './document.entity';
@@ -20,11 +20,6 @@ export class Voyage {
   @Column({ name: 'user_id', type: 'uuid' })
   userId: string;
 
-  // Remplacer par une vraie relation @ManyToOne(() => User) une fois le Module 1 en place
-  // @ManyToOne(() => User, (user) => user.voyages)
-  // @JoinColumn({ name: 'user_id' })
-  // user: User;
-
   @Column()
   destination: string;
 
@@ -36,6 +31,9 @@ export class Voyage {
 
   @Column({ type: 'enum', enum: VoyageStatut, default: VoyageStatut.A_VENIR })
   statut: VoyageStatut;
+
+  @Column({ name: 'archived_at', type: 'timestamp', nullable: true })
+  archivedAt: Date;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

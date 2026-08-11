@@ -157,3 +157,5 @@ Deux options :
 ## Contact
 
 Pour toute question sur le Module 2 (Trip Management), contacter Soufiane.
+
+demarrer le server postgres : pg_ctl -D C:\pgsql\data -l C:\pgsql\data\logfile.log start
