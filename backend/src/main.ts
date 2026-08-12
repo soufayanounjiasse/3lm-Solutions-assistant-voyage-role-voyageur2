@@ -5,11 +5,12 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.enableCors();
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
   const config = new DocumentBuilder()
     .setTitle('Voya API')
-    .setDescription('API du backend Voya — Module 2 : Trip Management')
+    .setDescription('API du backend Voya')
     .setVersion('1.0')
     .build();
   const document = SwaggerModule.createDocument(app, config);
