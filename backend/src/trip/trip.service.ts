@@ -22,19 +22,17 @@ export class TripService {
     return this.voyageRepository.save(voyage);
   }
 
-  async findAll(userId?: string): Promise<Voyage[]> {
-    if (userId) {
-      return this.voyageRepository.find({
-        where: { userId },
-        relations: { reservations: true, documents: true },
-        order: { dateDebut: 'ASC' },
-      });
-    }
-    return this.voyageRepository.find({
-      relations: { reservations: true, documents: true },
-      order: { dateDebut: 'ASC' },
-    });
-  }
+ async findAll(userId?: string, statut?: VoyageStatut): Promise<Voyage[]> {
+  const where: any = {};
+  if (userId) where.userId = userId;
+  if (statut) where.statut = statut;
+
+  return this.voyageRepository.find({
+    where,
+    relations: { reservations: true, documents: true },
+    order: { dateDebut: 'ASC' },
+  });
+}
 
   async findOne(id: string): Promise<Voyage> {
     const voyage = await this.voyageRepository.findOne({

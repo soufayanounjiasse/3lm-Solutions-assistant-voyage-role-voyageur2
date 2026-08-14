@@ -5,6 +5,7 @@ import { ApiTags, ApiQuery } from '@nestjs/swagger';
 import { TripService } from './trip.service';
 import { CreateVoyageDto } from './dto/create-voyage.dto';
 import { UpdateVoyageDto } from './dto/update-voyage.dto';
+import { VoyageStatut } from './entities/voyage.entity';
 
 @ApiTags('voyages')
 @Controller('voyages')
@@ -17,9 +18,13 @@ export class TripController {
   }
 
   @ApiQuery({ name: 'userId', required: false })
+  @ApiQuery({ name: 'statut', required: false, enum: VoyageStatut })
   @Get()
-  findAll(@Query('userId') userId?: string) {
-    return this.tripService.findAll(userId);
+  findAll(
+    @Query('userId') userId?: string,
+    @Query('statut') statut?: VoyageStatut,
+  ) {
+    return this.tripService.findAll(userId, statut);
   }
 
   @Get(':id')
@@ -27,13 +32,11 @@ export class TripController {
     return this.tripService.findOne(id);
   }
 
-  // Route officielle attendue par la tâche : modification complète du voyage
   @Put(':id')
   update(@Param('id') id: string, @Body() updateVoyageDto: UpdateVoyageDto) {
     return this.tripService.update(id, updateVoyageDto);
   }
 
-  // Route officielle attendue par la tâche : annulation (pas une vraie suppression)
   @Delete(':id')
   cancel(@Param('id') id: string) {
     return this.tripService.cancel(id);
