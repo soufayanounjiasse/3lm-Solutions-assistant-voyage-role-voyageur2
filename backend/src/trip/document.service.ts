@@ -1,7 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Document } from './entities/document.entity';
+import { Document, DocumentType } from './entities/document.entity';
 import { Voyage } from './entities/voyage.entity';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { UpdateDocumentDto } from './dto/update-document.dto';
@@ -25,6 +25,31 @@ export class DocumentService {
     document.type = dto.type;
     document.nomFichier = dto.nomFichier;
     document.urlS3 = dto.urlS3;
+    return this.documentRepository.save(document);
+  }
+
+  async createFromUpload(
+    voyageId: string,
+    file: Express.Multer.File,
+    type: string,
+  ): Promise<Document> {
+    const voyage = await this.voyageRepository.findOne({ where: { id: voyageId } });
+    if (!voyage) {
+      throw new NotFoundException(`Voyage avec l'id ${voyageId} introuvable`);
+    }
+    if (!file) {
+      throw new BadRequestException('Aucun fichier reçu');
+    }
+    if (!Object.values(DocumentType).includes(type as DocumentType)) {
+      throw new BadRequestException(`Type de document invalide : ${type}`);
+    }
+    const document = new Document();
+    document.voyageId = voyageId;
+    document.type = type as DocumentType;
+    document.nomFichier = file.originalname;
+    // Stockage local pour l'instant — à remplacer par une vraie URL S3
+    // une fois le compte AWS configuré (cf. CDC, stockage fichiers S3).
+    document.urlS3 = `http://localhost:3000/uploads/documents/${file.filename}`;
     return this.documentRepository.save(document);
   }
 

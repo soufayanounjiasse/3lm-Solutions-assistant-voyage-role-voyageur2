@@ -28,3 +28,39 @@ export async function fetchDocument(id: string): Promise<DocumentItem> {
   if (!res.ok) throw new Error(`Erreur serveur (${res.status})`);
   return res.json();
 }
+
+export async function uploadDocument(
+  voyageId: string,
+  type: string,
+  file: { uri: string; name: string; mimeType: string },
+): Promise<DocumentItem> {
+  const formData = new FormData();
+
+  if (Platform.OS === 'web') {
+    // Sur le web, il faut un vrai Blob, pas juste un objet {uri, name, type}
+    const response = await fetch(file.uri);
+    const blob = await response.blob();
+    formData.append('file', blob, file.name);
+  } else {
+    // @ts-ignore - React Native natif accepte ce format d'objet pour FormData
+    formData.append('file', {
+      uri: file.uri,
+      name: file.name,
+      type: file.mimeType || 'application/octet-stream',
+    });
+  }
+  formData.append('type', type);
+
+  const res = await fetch(`${API_BASE_URL}/voyages/${voyageId}/document/upload`, {
+    method: 'POST',
+    body: formData,
+    // Ne JAMAIS fixer manuellement 'Content-Type' ici : le navigateur/RN
+    // doit générer lui-même le boundary multipart, sinon le serveur ne
+    // peut pas parser le fichier (d'où le 400 Bad Request).
+  });
+  if (!res.ok) {
+    const errBody = await res.json().catch(() => ({}));
+    throw new Error(errBody.message ?? `Erreur serveur (${res.status})`);
+  }
+  return res.json();
+}
