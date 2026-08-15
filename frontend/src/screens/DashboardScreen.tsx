@@ -6,7 +6,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList, Voyage } from '../types';
-import { fetchVoyages, API_BASE_URL } from '../api/voya';
+import { fetchVoyageById, API_BASE_URL } from '../api/voya';
 
 const ACCENT = '#f4a259';
 
@@ -20,7 +20,8 @@ const iconForType = (type: string): keyof typeof Ionicons.glyphMap => {
   }
 };
 
-export default function DashboardScreen({ navigation }: Props) {
+export default function DashboardScreen({ navigation, route }: Props) {
+  const { voyageId } = route.params;
   const [voyage, setVoyage] = useState<Voyage | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -29,16 +30,16 @@ export default function DashboardScreen({ navigation }: Props) {
   const load = useCallback(async () => {
     try {
       setError(null);
-      const data = await fetchVoyages();
-      const actif = data.find((v) => v.statut !== 'ANNULE') ?? data[0] ?? null;
-      setVoyage(actif);
+      const data = await fetchVoyageById(voyageId);
+      setVoyage(data);
+      navigation.setOptions({ title: data.destination });
     } catch (e: any) {
       setError(e.message ?? 'Impossible de charger le voyage');
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [voyageId, navigation]);
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', load);
@@ -64,24 +65,13 @@ export default function DashboardScreen({ navigation }: Props) {
     );
   }
 
-  if (error) {
+  if (error || !voyage) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.centered}>
           <Ionicons name="cloud-offline-outline" size={40} color="#f28b82" />
-          <Text style={styles.errorText}>{error}</Text>
+          <Text style={styles.errorText}>{error ?? 'Voyage introuvable'}</Text>
           <Text style={styles.errorHint}>Vérifie que le backend tourne sur {API_BASE_URL}</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  if (!voyage) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.centered}>
-          <Text style={styles.loadingText}>Aucun voyage trouvé.</Text>
-          <Text style={styles.errorHint}>Crée un voyage via Swagger (POST /voyages) puis rafraîchis.</Text>
         </View>
       </SafeAreaView>
     );

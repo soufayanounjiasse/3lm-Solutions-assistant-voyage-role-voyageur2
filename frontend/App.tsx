@@ -2,6 +2,7 @@ import React from 'react';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { RootStackParamList } from './src/types';
+import VoyagesListScreen from './src/screens/VoyagesListScreen';
 import DashboardScreen from './src/screens/DashboardScreen';
 import ReservationsScreen from './src/screens/ReservationsScreen';
 import ReservationDetailScreen from './src/screens/ReservationDetailScreen';
@@ -25,8 +26,9 @@ const theme = {
 export default function App() {
   return (
     <NavigationContainer theme={theme}>
-      <Stack.Navigator>
-        <Stack.Screen name="Dashboard" component={DashboardScreen} options={{ title: 'Mon voyage' }} />
+      <Stack.Navigator initialRouteName="VoyagesList">
+        <Stack.Screen name="VoyagesList" component={VoyagesListScreen} options={{ title: 'Mes voyages' }} />
+        <Stack.Screen name="Dashboard" component={DashboardScreen} options={{ title: 'Voyage' }} />
         <Stack.Screen name="Reservations" component={ReservationsScreen} />
         <Stack.Screen name="ReservationDetail" component={ReservationDetailScreen} options={{ title: 'Détail réservation' }} />
         <Stack.Screen name="Documents" component={DocumentsScreen} />

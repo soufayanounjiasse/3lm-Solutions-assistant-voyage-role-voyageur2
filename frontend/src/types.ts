@@ -29,7 +29,8 @@ export type Voyage = {
 };
 
 export type RootStackParamList = {
-  Dashboard: undefined;
+  VoyagesList: undefined;
+  Dashboard: { voyageId: string };
   Reservations: { voyageId: string; destination: string };
   ReservationDetail: { reservationId: string };
   Documents: { voyageId: string; destination: string };
