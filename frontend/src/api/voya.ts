@@ -1,7 +1,8 @@
 import { Voyage, Reservation, DocumentItem } from '../types';
-import { getCached, setCached } from './cache';
+import { getCached, setCached } from './cache'
 
 export const API_BASE_URL = 'http://localhost:3000';
+//export const API_BASE_URL = 'http://10.87.218.69:8082';
 
 export async function fetchVoyages(statut?: string): Promise<Voyage[]> {
   const cacheKey = `voyages_${statut ?? 'all'}`;
@@ -95,6 +96,48 @@ export async function uploadDocument(
   if (!res.ok) {
     const errBody = await res.json().catch(() => ({}));
     throw new Error(errBody.message ?? `Erreur serveur (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function createVoyage(payload: {
+  userId: string;
+  destination: string;
+  dateDebut: string;
+  dateFin: string;
+}): Promise<Voyage> {
+  const res = await fetch(`${API_BASE_URL}/voyages`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const message = Array.isArray(err.message) ? err.message.join(', ') : err.message;
+    throw new Error(message ?? `Erreur serveur (${res.status})`);
+  }
+  return res.json();
+}
+
+export async function createReservation(
+  voyageId: string,
+  payload: {
+    type: string;
+    fournisseur: string;
+    reference: string;
+    dateDebut: string;
+    dateFin?: string;
+  },
+): Promise<Reservation> {
+  const res = await fetch(`${API_BASE_URL}/voyages/${voyageId}/reservation`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const message = Array.isArray(err.message) ? err.message.join(', ') : err.message;
+    throw new Error(message ?? `Erreur serveur (${res.status})`);
   }
   return res.json();
 }

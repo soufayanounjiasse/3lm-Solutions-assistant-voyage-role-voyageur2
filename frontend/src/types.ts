@@ -27,8 +27,10 @@ export type Voyage = {
   reservations: Reservation[];
   documents: DocumentItem[];
 };
-
 export type RootStackParamList = {
+  MainMenu: undefined;
+  Unavailable: { title: string };
+  SelectVoyageForReservation: undefined;
   VoyagesList: undefined;
   Dashboard: { voyageId: string };
   Reservations: { voyageId: string; destination: string };
