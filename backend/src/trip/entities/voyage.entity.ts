@@ -1,9 +1,10 @@
 import {
   Entity, PrimaryGeneratedColumn, Column, CreateDateColumn,
-  OneToMany,
+  OneToMany, ManyToOne, JoinColumn,
 } from 'typeorm';
 import { Reservation } from './reservation.entity';
 import { Document } from './document.entity';
+import { User } from '../../user/entities/user.entity';
 
 export enum VoyageStatut {
   A_VENIR = 'A_VENIR',
@@ -19,6 +20,10 @@ export class Voyage {
 
   @Column({ name: 'user_id', type: 'uuid' })
   userId: string;
+
+  @ManyToOne(() => User, (user) => user.voyages, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'user_id' })
+  user: User;
 
   @Column()
   destination: string;
