@@ -27,7 +27,28 @@ export type Voyage = {
   reservations: Reservation[];
   documents: DocumentItem[];
 };
+
+export type User = {
+  id: string;
+  email?: string;
+  telephone?: string;
+  prenom: string;
+  nom: string;
+  photoUrl?: string;
+  langue: string;
+  statut: string;
+};
+
+export type UserPreferences = {
+  id?: string;
+  userId: string;
+  budgetMin?: number | string;
+  budgetMax?: number | string;
+  centresInteret: string[];
+  typeVoyage?: 'AFFAIRES' | 'TOURISME' | 'FAMILLE' | 'ETUDIANT';
+};
 export type RootStackParamList = {
+  Onboarding: undefined;
   MainMenu: undefined;
   Unavailable: { title: string };
   SelectVoyageForReservation: undefined;
@@ -37,4 +58,7 @@ export type RootStackParamList = {
   ReservationDetail: { reservationId: string };
   Documents: { voyageId: string; destination: string };
   DocumentDetail: { documentId: string };
+  Profile: undefined;
+  Login: undefined;
+  Register: undefined;
 };

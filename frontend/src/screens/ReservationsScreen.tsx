@@ -56,14 +56,22 @@ export default function ReservationsScreen({ route, navigation }: Props) {
   const [dateDebut, setDateDebut] = useState('');
   const [dateFin, setDateFin] = useState('');
 
-  const load = useCallback(async () => {
+const [error, setError] = useState<string | null>(null);
+
+const load = useCallback(async () => {
+  try {
+    setError(null);
     const res = await fetch(`${API_BASE_URL}/voyages/${voyageId}/reservation`);
+    if (!res.ok) throw new Error(`Erreur serveur (${res.status})`);
     const data = await res.json();
     setReservations(data);
+  } catch (e: any) {
+    setError(e.message ?? 'Impossible de charger les réservations');
+  } finally {
     setLoading(false);
     setRefreshing(false);
-  }, [voyageId]);
-
+  }
+}, [voyageId]);
   useEffect(() => {
     navigation.setOptions({ title: `Réservations · ${destination}` });
     load();
@@ -111,6 +119,21 @@ export default function ReservationsScreen({ route, navigation }: Props) {
   };
 
   if (loading) {
+    if (error) {
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.centered}>
+        <Ionicons name="cloud-offline-outline" size={40} color="#f28b82" />
+        <Text style={{ color: '#f28b82', fontSize: 15, fontWeight: '600', marginTop: 10, textAlign: 'center' }}>
+          {error}
+        </Text>
+        <Text style={{ color: '#8fa3a3', fontSize: 13, marginTop: 8, textAlign: 'center' }}>
+          Vérifie que le backend tourne sur {API_BASE_URL}
+        </Text>
+      </View>
+    </SafeAreaView>
+  );
+}
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.centered}>

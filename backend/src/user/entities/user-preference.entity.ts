@@ -28,7 +28,7 @@ export class UserPreference {
   @Column({ name: 'budget_max', type: 'numeric', precision: 12, scale: 2, nullable: true })
   budgetMax: string;
 
-  @Column({ type: 'jsonb', default: () => "'[]'::jsonb" })
+  @Column({ name: 'centres_interet', type: 'jsonb', default: () => "'[]'::jsonb" })
   centresInteret: string[];
 
   @Column({ name: 'type_voyage', type: 'enum', enum: TypeVoyage, nullable: true })

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   SafeAreaView, ScrollView, Text, StyleSheet, Pressable, ActivityIndicator, Alert,
 } from 'react-native';
@@ -6,10 +7,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { createVoyage } from '../api/voya';
 import DatePickerField from '../components/DatePickerField';
 import SelectField from '../components/SelectField';
+import { useLanguage } from '../i18n';
 
 const ACCENT = '#f4a259';
-const PLACEHOLDER_USER_ID = '3fa85f64-5717-4562-b3fc-2c963f66afa6';
-
 const DESTINATIONS = [
   'Paris, France', 'Lyon, France', 'Marseille, France',
   'Tunis, Tunisie', 'Casablanca, Maroc', 'Dakar, Sénégal',
@@ -18,25 +18,31 @@ const DESTINATIONS = [
 ];
 
 export default function NewVoyageScreen() {
+  const { t } = useLanguage();
   const [destination, setDestination] = useState('');
   const [dateDebut, setDateDebut] = useState('');
   const [dateFin, setDateFin] = useState('');
   const [loading, setLoading] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    AsyncStorage.getItem('voya_user_id').then(setUserId);
+  }, []);
 
   const handleSubmit = async () => {
-    if (!destination || !dateDebut || !dateFin) {
-      Alert.alert('Champs manquants', 'Choisis une destination et les deux dates.');
+    if (!destination || !dateDebut || !dateFin || !userId) {
+      Alert.alert(t('missingFields'), `${t('chooseDestination')} et ${t('startDate')} / ${t('endDate')}.`);
       return;
     }
     setLoading(true);
     try {
-      await createVoyage({ userId: PLACEHOLDER_USER_ID, destination, dateDebut, dateFin });
-      Alert.alert('Voyage créé', `${destination} a bien été ajouté.`);
+      await createVoyage({ userId, destination, dateDebut, dateFin });
+      Alert.alert(t('saved'), `${destination} ${t('savedMessage').toLowerCase()}`);
       setDestination('');
       setDateDebut('');
       setDateFin('');
     } catch (e: any) {
-      Alert.alert('Erreur', e.message ?? 'Impossible de créer le voyage.');
+      Alert.alert(t('genericError'), e.message ?? t('genericError'));
     } finally {
       setLoading(false);
     }
@@ -45,18 +51,18 @@ export default function NewVoyageScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.header}>Nouveau voyage</Text>
+        <Text style={styles.header}>{t('newTrip')}</Text>
 
         <SelectField
-          label="Destination"
+          label={t('destination')}
           value={destination}
           options={DESTINATIONS}
           onChange={setDestination}
-          placeholder="Choisir une destination"
+          placeholder={t('chooseDestination')}
         />
 
-        <DatePickerField label="Date de début" value={dateDebut} onChange={setDateDebut} />
-        <DatePickerField label="Date de fin" value={dateFin} onChange={setDateFin} />
+        <DatePickerField label={t('startDate')} value={dateDebut} onChange={setDateDebut} />
+        <DatePickerField label={t('endDate')} value={dateFin} onChange={setDateFin} />
 
         <Pressable style={styles.button} onPress={handleSubmit} disabled={loading}>
           {loading ? (
@@ -64,7 +70,7 @@ export default function NewVoyageScreen() {
           ) : (
             <>
               <Ionicons name="add-circle-outline" size={18} color="#0d2b2b" />
-              <Text style={styles.buttonText}>Créer le voyage</Text>
+              <Text style={styles.buttonText}>{t('createTrip')}</Text>
             </>
           )}
         </Pressable>

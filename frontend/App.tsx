@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { RootStackParamList } from './src/types';
+import { RootStackParamList, User } from './src/types';
 import MainMenuScreen from './src/screens/MainMenuScreen';
 import UnavailableScreen from './src/screens/UnavailableScreen';
 import NewVoyageScreen from './src/screens/NewVoyageScreen';
@@ -15,6 +16,11 @@ import ReservationDetailScreen from './src/screens/ReservationDetailScreen';
 import DocumentsScreen from './src/screens/DocumentsScreen';
 import DocumentDetailScreen from './src/screens/DocumentDetailScreen';
 import SelectVoyageForReservationScreen from './src/screens/SelectVoyageForReservationScreen';
+import LoginScreen from './src/screens/LoginScreen';
+import RegisterScreen from './src/screens/RegisterScreen';
+import ProfileScreen from './src/screens/ProfileScreen';
+import OnboardingScreen from './src/screens/OnboardingScreen';
+import { LanguageProvider } from './src/i18n';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
@@ -51,7 +57,7 @@ function MenuStack() {
 
 // Composant séparé pour pouvoir utiliser useSafeAreaInsets
 // (doit être DANS le SafeAreaProvider, donc pas directement dans App).
-function AppTabs() {
+function AppTabs({ token, onLogout }: { token: string; onLogout: () => Promise<void> }) {
   const insets = useSafeAreaInsets();
 
   return (
@@ -102,18 +108,60 @@ function AppTabs() {
           ),
         }}
       >
-        {() => <UnavailableScreen route={{ params: { title: 'Paramètres' } } as any} navigation={{} as any} />}
+        {() => <ProfileScreen token={token} onLogout={onLogout} />}
       </Tab.Screen>
     </Tab.Navigator>
   );
 }
 
 export default function App() {
+  const [token, setToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    AsyncStorage.getItem('voya_access_token').then(setToken).finally(() => setLoading(false));
+  }, []);
+
+  const authenticate = async (accessToken: string, user: User) => {
+    await AsyncStorage.setItem('voya_access_token', accessToken);
+    await AsyncStorage.setItem('voya_user_id', user.id);
+    setToken(accessToken);
+  };
+
+  const logout = async () => {
+    await AsyncStorage.removeItem('voya_access_token');
+    await AsyncStorage.removeItem('voya_user_id');
+    setToken(null);
+  };
+
+  if (loading) return null;
+  if (!token) {
+    return (
+      <SafeAreaProvider>
+        <LanguageProvider>
+          <NavigationContainer theme={theme}>
+            <Stack.Navigator screenOptions={{ headerShown: true, headerStyle: { backgroundColor: '#123a3a' }, headerTintColor: '#fff' }}>
+              <Stack.Screen name="Onboarding" component={OnboardingScreen} options={{ headerShown: false }} />
+              <Stack.Screen name="Login" options={{ title: 'Connexion' }}>
+                {(props) => <LoginScreen {...props} onAuthenticated={authenticate} />}
+              </Stack.Screen>
+              <Stack.Screen name="Register" options={{ title: 'Inscription' }}>
+                {(props) => <RegisterScreen {...props} onAuthenticated={authenticate} />}
+              </Stack.Screen>
+            </Stack.Navigator>
+          </NavigationContainer>
+        </LanguageProvider>
+      </SafeAreaProvider>
+    );
+  }
+
   return (
     <SafeAreaProvider>
-      <NavigationContainer theme={theme}>
-        <AppTabs />
-      </NavigationContainer>
+      <LanguageProvider>
+        <NavigationContainer theme={theme}>
+          <AppTabs token={token} onLogout={logout} />
+        </NavigationContainer>
+      </LanguageProvider>
     </SafeAreaProvider>
   );
 }

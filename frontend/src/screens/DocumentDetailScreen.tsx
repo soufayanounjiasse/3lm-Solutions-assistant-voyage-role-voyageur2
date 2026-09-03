@@ -3,9 +3,11 @@ import { SafeAreaView, View, Text, StyleSheet, ActivityIndicator, Linking, Press
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList, DocumentItem } from '../types';
-import { fetchDocument } from '../api/voya';
+import { fetchDocument, deleteDocument } from '../api/voya';
+import ConfirmModal from '../components/ConfirmModal';
 
 const ACCENT = '#f4a259';
+const DANGER = '#f28b82';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'DocumentDetail'>;
 
@@ -19,10 +21,12 @@ const iconForDocType = (type: string): keyof typeof Ionicons.glyphMap => {
   }
 };
 
-export default function DocumentDetailScreen({ route }: Props) {
+export default function DocumentDetailScreen({ route, navigation }: Props) {
   const { documentId } = route.params;
   const [document, setDocument] = useState<DocumentItem | null>(null);
   const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmVisible, setConfirmVisible] = useState(false);
 
   useEffect(() => {
     fetchDocument(documentId).then((d) => {
@@ -30,6 +34,18 @@ export default function DocumentDetailScreen({ route }: Props) {
       setLoading(false);
     });
   }, [documentId]);
+
+  const confirmDelete = async () => {
+    setDeleting(true);
+    try {
+      await deleteDocument(documentId);
+      navigation.goBack();
+    } catch (e: any) {
+      console.error(e);
+      setDeleting(false);
+      setConfirmVisible(false);
+    }
+  };
 
   if (loading || !document) {
     return (
@@ -64,13 +80,29 @@ export default function DocumentDetailScreen({ route }: Props) {
           <Ionicons name="open-outline" size={18} color="#0d2b2b" />
           <Text style={styles.linkButtonText}>Ouvrir le document</Text>
         </Pressable>
+
+        <Pressable style={styles.deleteButton} onPress={() => setConfirmVisible(true)}>
+          <Ionicons name="trash-outline" size={18} color={DANGER} />
+          <Text style={styles.deleteButtonText}>Supprimer le document</Text>
+        </Pressable>
       </View>
+
+      <ConfirmModal
+        visible={confirmVisible}
+        title="Supprimer le document"
+        message="Cette action est définitive. Veux-tu continuer ?"
+        confirmLabel="Supprimer"
+        loading={deleting}
+        onConfirm={confirmDelete}
+        onCancel={() => setConfirmVisible(false)}
+      />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0d2b2b' },
+  centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   content: { padding: 24, alignItems: 'center' },
   iconCircle: { width: 72, height: 72, borderRadius: 36, backgroundColor: '#123a3a', justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
   title: { color: '#ffffff', fontSize: 18, fontWeight: '800', marginBottom: 10, textAlign: 'center' },
@@ -79,6 +111,14 @@ const styles = StyleSheet.create({
   infoRow: { width: '100%', flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#1f4d4d', marginBottom: 24 },
   infoLabel: { color: '#8fa3a3', fontSize: 14 },
   infoValue: { color: '#ffffff', fontSize: 14, fontWeight: '600' },
-  linkButton: { flexDirection: 'row', alignItems: 'center', backgroundColor: ACCENT, borderRadius: 14, paddingVertical: 12, paddingHorizontal: 20 },
+  linkButton: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: ACCENT, borderRadius: 14, paddingVertical: 12, width: '100%', marginBottom: 12,
+  },
   linkButtonText: { color: '#0d2b2b', fontSize: 14, fontWeight: '700', marginLeft: 8 },
+  deleteButton: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1, borderColor: DANGER, borderRadius: 14, paddingVertical: 12, width: '100%',
+  },
+  deleteButtonText: { color: DANGER, fontSize: 14, fontWeight: '700', marginLeft: 8 },
 });

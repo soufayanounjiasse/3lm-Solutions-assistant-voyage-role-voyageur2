@@ -69,71 +69,77 @@ export default function VoyagesListScreen({ navigation }: Props) {
   const formatDate = (iso: string) =>
     new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.tabsRow}>
-        {TABS.map((tab) => (
-          <Pressable
-            key={tab.label}
-            style={[styles.tab, activeTab === tab.value && styles.tabActive]}
-            onPress={() => selectTab(tab.value)}
-          >
-            <Text style={[styles.tabText, activeTab === tab.value && styles.tabTextActive]}>
-              {tab.label}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
 
-      {loading ? (
-        <View style={styles.centered}>
-          <ActivityIndicator size="large" color={ACCENT} />
-        </View>
-      ) : error ? (
-        <View style={styles.centered}>
-          <Ionicons name="cloud-offline-outline" size={40} color="#f28b82" />
-          <Text style={styles.errorText}>{error}</Text>
-          <Text style={styles.errorHint}>Vérifie que le backend tourne sur {API_BASE_URL}</Text>
-        </View>
-      ) : (
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={ACCENT} />}
+return (
+  <SafeAreaView style={styles.container}>
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.tabsRow}
+    >
+      {TABS.map((tab) => (
+        <Pressable
+          key={tab.label}
+          style={[styles.tab, activeTab === tab.value && styles.tabActive]}
+          onPress={() => selectTab(tab.value)}
         >
-          {voyages.length === 0 ? (
-            <Text style={styles.emptyText}>Aucun voyage dans cette catégorie.</Text>
-          ) : (
-            voyages.map((v) => (
-              <Pressable
-                key={v.id}
-                style={styles.card}
-                onPress={() => navigation.navigate('Dashboard', { voyageId: v.id })}
-              >
-                <View style={styles.cardHeader}>
-                  <Text style={styles.cardDestination}>{v.destination}</Text>
-                  <View style={[styles.badge, { backgroundColor: statutColor(v.statut) + '22' }]}>
-                    <Text style={[styles.badgeText, { color: statutColor(v.statut) }]}>
-                      {v.statut.replace('_', ' ')}
-                    </Text>
-                  </View>
-                </View>
-                <Text style={styles.cardDates}>
-                  {formatDate(v.dateDebut)} → {formatDate(v.dateFin)}
-                </Text>
-                <View style={styles.cardFooter}>
-                  <Text style={styles.cardFooterText}>
-                    {v.reservations.length} réservation(s) · {v.documents.length} document(s)
+          <Text style={[styles.tabText, activeTab === tab.value && styles.tabTextActive]}>
+            {tab.label}
+          </Text>
+        </Pressable>
+      ))}
+    </ScrollView>
+
+    {loading ? (
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color={ACCENT} />
+      </View>
+    ) : error ? (
+      <View style={styles.centered}>
+        <Ionicons name="cloud-offline-outline" size={40} color="#f28b82" />
+        <Text style={styles.errorText}>{error}</Text>
+        <Text style={styles.errorHint}>Vérifie que le backend tourne sur {API_BASE_URL}</Text>
+      </View>
+    ) : (
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={ACCENT} />}
+      >
+        {voyages.length === 0 ? (
+          <Text style={styles.emptyText}>Aucun voyage dans cette catégorie.</Text>
+        ) : (
+          voyages.map((v) => (
+            <Pressable
+              key={v.id}
+              style={styles.card}
+              onPress={() => navigation.navigate('Dashboard', { voyageId: v.id })}
+            >
+              <View style={styles.cardHeader}>
+                <Text style={styles.cardDestination}>{v.destination}</Text>
+                <View style={[styles.badge, { backgroundColor: statutColor(v.statut) + '22' }]}>
+                  <Text style={[styles.badgeText, { color: statutColor(v.statut) }]}>
+                    {v.statut.replace('_', ' ')}
                   </Text>
-                  <Ionicons name="chevron-forward" size={18} color="#8fa3a3" />
                 </View>
-              </Pressable>
-            ))
-          )}
-        </ScrollView>
-      )}
-    </SafeAreaView>
-  );
+              </View>
+              <Text style={styles.cardDates}>
+                {formatDate(v.dateDebut)} → {formatDate(v.dateFin)}
+              </Text>
+              <View style={styles.cardFooter}>
+                <Text style={styles.cardFooterText}>
+                  {v.reservations.length} réservation(s) · {v.documents.length} document(s)
+                </Text>
+                <Ionicons name="chevron-forward" size={18} color="#8fa3a3" />
+              </View>
+            </Pressable>
+          ))
+        )}
+      </ScrollView>
+    )}
+  </SafeAreaView>
+);
 }
+
 
 // Petit hook local pour recharger à chaque focus de l'écran (retour depuis Dashboard inclus)
 function useFocusOnMount(effect: () => void, deps: any[]) {

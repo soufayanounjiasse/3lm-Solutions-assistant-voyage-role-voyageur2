@@ -2,6 +2,7 @@
 
 ✅ Environnement complet installé (Node, Git, NestJS CLI, PostgreSQL natif)
 ✅ Backend NestJS connecté à PostgreSQL via TypeORM
+✅ Module 1 : inscription, connexion JWT, profil et préférences utilisateur
 ✅ Module 2 (Trip) : Voyage et Reservation en CRUD complet, testés via Swagger
 ✅ Projet versionné sur GitHub, workflow en branches en place
 ⏸️ Document (Module 2) : reste à faire
@@ -76,6 +77,7 @@ DB_PORT=5432
 DB_USERNAME=postgres
 DB_PASSWORD=ton_mot_de_passe_postgres
 DB_NAME=voya_db
+JWT_SECRET=une_valeur_secrete_forte
 ```
 
 ## Lancer le projet
@@ -87,7 +89,39 @@ npm run start:dev
 Le serveur écoute sur `http://localhost:3000`.
 
 - **Documentation API interactive (Swagger)** : http://localhost:3000/api
-- Les tables sont créées automatiquement en base grâce à `synchronize: true` (mode développement uniquement — **à désactiver avant la mise en production**).
+- Les changements de schéma sont gérés par les migrations TypeORM. `synchronize` est désactivé dans l'application.
+
+## Module utilisateur
+
+Le module utilisateur est enregistré dans `AppModule` et documenté automatiquement dans Swagger.
+
+### Authentification
+
+| Méthode | Route | Description |
+|---|---|---|
+| `POST` | `/auth/register` | Créer un compte avec email ou téléphone |
+| `POST` | `/auth/login` | Se connecter avec email ou téléphone |
+| `POST` | `/auth/social-login` | Connexion Google, Apple ou Facebook |
+| `POST` | `/auth/forgot-password` | Demander une réinitialisation |
+| `POST` | `/auth/reset-password` | Réinitialiser le mot de passe |
+
+### Profil et préférences
+
+| Méthode | Route | Description |
+|---|---|---|
+| `GET` | `/users/me` | Récupérer le profil lié au token JWT |
+| `GET` | `/users/:id` | Récupérer un profil |
+| `PATCH` | `/users/:id` | Modifier un profil |
+| `GET` | `/users/:id/preferences` | Récupérer les préférences |
+| `PATCH` | `/users/:id/preferences` | Modifier les préférences |
+
+Les routes protégées utilisent `Authorization: Bearer <accessToken>`. Dans Swagger, cliquer sur **Authorize** et saisir le token avec le préfixe `Bearer`.
+
+La migration `1788293510408-UserModule` crée les tables utilisateur et préférences. Appliquer les migrations avec :
+
+```powershell
+npm run migration:run
+```
 
 ## Structure du projet
 

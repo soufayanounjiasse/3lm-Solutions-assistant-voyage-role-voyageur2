@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable, Modal, ScrollView, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useLanguage } from '../i18n';
 
 const ACCENT = '#f4a259';
 
@@ -13,6 +14,7 @@ type Props = {
 };
 
 export default function SelectField({ label, value, options, onChange, placeholder }: Props) {
+  const { t } = useLanguage();
   const [visible, setVisible] = useState(false);
 
   return (
@@ -21,7 +23,7 @@ export default function SelectField({ label, value, options, onChange, placehold
       <Pressable style={styles.field} onPress={() => setVisible(true)}>
         <Ionicons name="list-outline" size={18} color={ACCENT} />
         <Text style={[styles.fieldText, !value && styles.placeholder]} numberOfLines={1}>
-          {value || placeholder || 'Sélectionner...'}
+          {value || placeholder || t('select')}
         </Text>
         <Ionicons name="chevron-down" size={18} color="#8fa3a3" />
       </Pressable>

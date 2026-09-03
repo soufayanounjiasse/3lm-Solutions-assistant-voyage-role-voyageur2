@@ -3,6 +3,7 @@ import { SafeAreaView, ScrollView, View, Text, StyleSheet, Pressable } from 'rea
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
+import { useLanguage } from '../i18n';
 
 const ACCENT = '#f4a259';
 
@@ -15,20 +16,20 @@ type ModuleItem = {
   route?: keyof RootStackParamList;
 };
 
-const MODULES: ModuleItem[] = [
-  { label: 'Réservations', icon: 'calendar-outline', available: true, route: 'SelectVoyageForReservation' },
-  { label: 'Mes voyages', icon: 'airplane-outline', available: true, route: 'VoyagesList' },
-  { label: 'Assistant IA', icon: 'chatbubble-ellipses-outline', available: false },
-  { label: 'eSIM', icon: 'cellular-outline', available: false },
-  { label: 'Chauffeur', icon: 'car-outline', available: false },
-  { label: 'Hôtels', icon: 'bed-outline', available: false },
-  { label: 'Marketplace', icon: 'storefront-outline', available: false },
-  { label: 'Travel Wallet', icon: 'wallet-outline', available: false },
-  { label: 'Paiement', icon: 'card-outline', available: false },
-  { label: 'Mode simple', icon: 'accessibility-outline', available: false },
-];
-
 export default function MainMenuScreen({ navigation }: Props) {
+  const { t } = useLanguage();
+  const modules: ModuleItem[] = [
+    { label: t('reservations'), icon: 'calendar-outline', available: true, route: 'SelectVoyageForReservation' },
+    { label: t('myTrips'), icon: 'airplane-outline', available: true, route: 'VoyagesList' },
+    { label: t('assistant'), icon: 'chatbubble-ellipses-outline', available: false },
+    { label: t('esim'), icon: 'cellular-outline', available: false },
+    { label: t('driver'), icon: 'car-outline', available: false },
+    { label: t('hotels'), icon: 'bed-outline', available: false },
+    { label: t('marketplace'), icon: 'storefront-outline', available: false },
+    { label: t('wallet'), icon: 'wallet-outline', available: false },
+    { label: t('payment'), icon: 'card-outline', available: false },
+    { label: t('simpleMode'), icon: 'accessibility-outline', available: false },
+  ];
   const handlePress = (item: ModuleItem) => {
     if (item.available && item.route) {
       navigation.navigate(item.route as any);
@@ -39,15 +40,15 @@ export default function MainMenuScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.header}>Menu</Text>
+      <Text style={styles.header}>{t('menu')}</Text>
       <ScrollView contentContainerStyle={styles.grid}>
-        {MODULES.map((item) => (
+        {modules.map((item) => (
           <Pressable key={item.label} style={styles.card} onPress={() => handlePress(item)}>
             <View style={[styles.iconWrap, item.available && styles.iconWrapActive]}>
               <Ionicons name={item.icon} size={26} color={item.available ? '#0d2b2b' : ACCENT} />
             </View>
             <Text style={styles.label}>{item.label}</Text>
-            {!item.available && <Text style={styles.badge}>Bientôt</Text>}
+            {!item.available && <Text style={styles.badge}>{t('soon')}</Text>}
           </Pressable>
         ))}
       </ScrollView>

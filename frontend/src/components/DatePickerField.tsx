@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable, StyleSheet, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useLanguage } from '../i18n';
 
 const ACCENT = '#f4a259';
 
@@ -47,6 +48,7 @@ function WebDatePickerField({ label, value, onChange }: Props) {
 
 // --- Version MOBILE (iOS/Android) : picker natif ---
 function NativeDatePickerField({ label, value, onChange }: Props) {
+  const { t, language } = useLanguage();
   const [show, setShow] = useState(false);
   // Import différé : ce module casse le bundle web s'il est chargé en haut du fichier
   const DateTimePicker = require('@react-native-community/datetimepicker').default;
@@ -63,7 +65,7 @@ function NativeDatePickerField({ label, value, onChange }: Props) {
 
   const displayText = value
     ? new Date(value).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })
-    : 'Choisir une date';
+    : t('chooseDate');
 
   return (
     <View style={styles.wrapper}>
