@@ -5,6 +5,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList, Reservation } from '../types';
 import { fetchReservation, updateReservation } from '../api/voya';
 import ConfirmModal from '../components/ConfirmModal';
+import { useLanguage } from '../i18n';
 
 const ACCENT = '#f4a259';
 const DANGER = '#f28b82';
@@ -19,7 +20,8 @@ const iconForType = (type: string): keyof typeof Ionicons.glyphMap => {
   }
 };
 
-export default function ReservationDetailScreen({ route }: Props) {
+export default function ReservationDetailScreen({ route, navigation }: Props) {
+  const { t } = useLanguage();
   const { reservationId } = route.params;
   const [reservation, setReservation] = useState<Reservation | null>(null);
   const [loading, setLoading] = useState(true);
@@ -34,8 +36,9 @@ export default function ReservationDetailScreen({ route }: Props) {
   }, [reservationId]);
 
   useEffect(() => {
+    navigation.setOptions({ title: t('reservationDetailTitle') });
     load();
-  }, [load]);
+  }, [load, navigation]);
 
   const confirmCancel = async () => {
     setCancelling(true);
@@ -77,31 +80,31 @@ export default function ReservationDetailScreen({ route }: Props) {
         </View>
 
         <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Référence</Text>
+          <Text style={styles.infoLabel}>{t('reference')}</Text>
           <Text style={styles.infoValue}>{reservation.reference}</Text>
         </View>
         <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Départ / Début</Text>
+          <Text style={styles.infoLabel}>{t('departureStart')}</Text>
           <Text style={styles.infoValue}>{formatDateTime(reservation.dateDebut)}</Text>
         </View>
         <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Arrivée / Fin</Text>
+          <Text style={styles.infoLabel}>{t('arrivalEnd')}</Text>
           <Text style={styles.infoValue}>{formatDateTime(reservation.dateFin)}</Text>
         </View>
 
         {!isCancelled && (
           <Pressable style={styles.cancelButton} onPress={() => setConfirmVisible(true)}>
             <Ionicons name="close-circle-outline" size={18} color={DANGER} />
-            <Text style={styles.cancelButtonText}>Annuler la réservation</Text>
+            <Text style={styles.cancelButtonText}>{t('cancelReservation')}</Text>
           </Pressable>
         )}
       </View>
 
       <ConfirmModal
         visible={confirmVisible}
-        title="Annuler la réservation"
-        message="Es-tu sûr de vouloir annuler cette réservation ?"
-        confirmLabel="Annuler la réservation"
+        title={t('cancelReservation')}
+        message={t('cancelReservationConfirmMessage')}
+        confirmLabel={t('cancelReservation')}
         loading={cancelling}
         onConfirm={confirmCancel}
         onCancel={() => setConfirmVisible(false)}

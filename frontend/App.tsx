@@ -20,7 +20,10 @@ import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
+import SettingsListScreen from './src/screens/SettingsListScreen';
+import LanguageScreen from './src/screens/LanguageScreen';
 import { LanguageProvider } from './src/i18n';
+
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
@@ -55,9 +58,20 @@ function MenuStack() {
   );
 }
 
-// Composant séparé pour pouvoir utiliser useSafeAreaInsets
-// (doit être DANS le SafeAreaProvider, donc pas directement dans App).
-function AppTabs({ token, onLogout }: { token: string; onLogout: () => Promise<void> }) {
+function SettingsStack({ token, onLogout }: { token: string; onLogout: () => Promise<void> }) {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: true, headerStyle: { backgroundColor: '#123a3a' }, headerTintColor: '#fff' }}>
+      <Stack.Screen name="SettingsList" component={SettingsListScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="Unavailable" options={{ title: '' }} component={UnavailableScreen} />
+      <Stack.Screen name="Language" component={LanguageScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="ProfileDetail" options={{ headerShown: false }}>
+        {() => <ProfileScreen token={token} onLogout={onLogout} />}
+      </Stack.Screen>
+    </Stack.Navigator>
+  );
+}
+
+function AppTabs({ token, userId, onLogout }: { token: string; userId: string; onLogout: () => Promise<void> }) {
   const insets = useSafeAreaInsets();
 
   return (
@@ -78,28 +92,28 @@ function AppTabs({ token, onLogout }: { token: string; onLogout: () => Promise<v
     >
       <Tab.Screen
         name="Nouveau"
-        component={NewVoyageScreen}
         options={{
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons name={focused ? 'add-circle' : 'add-circle-outline'} size={size} color={color} />
           ),
         }}
-      />
+      >
+        {() => <NewVoyageScreen userId={userId} />}
+      </Tab.Screen>
       <Tab.Screen
-    name="Menu"
-    component={MenuStack}
-    options={{
-      tabBarIcon: ({ color, size, focused }) => (
-        <Ionicons name={focused ? 'grid' : 'grid-outline'} size={size} color={color} />
-      ),
-    }}
-    listeners={({ navigation }) => ({
-      tabPress: () => {
-        // Quel que soit l'écran affiché dans la pile Menu, on revient toujours à la racine.
-        navigation.navigate('Menu', { screen: 'MainMenu' });
-      },
-    })}
-  />
+        name="Menu"
+        component={MenuStack}
+        options={{
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'grid' : 'grid-outline'} size={size} color={color} />
+          ),
+        }}
+        listeners={({ navigation }) => ({
+          tabPress: () => {
+            navigation.navigate('Menu', { screen: 'MainMenu' });
+          },
+        })}
+      />
       <Tab.Screen
         name="Paramètres"
         options={{
@@ -108,34 +122,44 @@ function AppTabs({ token, onLogout }: { token: string; onLogout: () => Promise<v
           ),
         }}
       >
-        {() => <ProfileScreen token={token} onLogout={onLogout} />}
+        {() => <SettingsStack token={token} onLogout={onLogout} />}
       </Tab.Screen>
-    </Tab.Navigator>
-  );
-}
+          </Tab.Navigator>
+        );
+      }
 
 export default function App() {
   const [token, setToken] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    AsyncStorage.getItem('voya_access_token').then(setToken).finally(() => setLoading(false));
+    Promise.all([
+      AsyncStorage.getItem('voya_access_token'),
+      AsyncStorage.getItem('voya_user_id'),
+    ]).then(([storedToken, storedUserId]) => {
+      setToken(storedToken);
+      setUserId(storedUserId);
+    }).finally(() => setLoading(false));
   }, []);
 
   const authenticate = async (accessToken: string, user: User) => {
     await AsyncStorage.setItem('voya_access_token', accessToken);
     await AsyncStorage.setItem('voya_user_id', user.id);
     setToken(accessToken);
+    setUserId(user.id);
   };
 
   const logout = async () => {
     await AsyncStorage.removeItem('voya_access_token');
     await AsyncStorage.removeItem('voya_user_id');
     setToken(null);
+    setUserId(null);
   };
 
   if (loading) return null;
-  if (!token) {
+
+  if (!token || !userId) {
     return (
       <SafeAreaProvider>
         <LanguageProvider>
@@ -159,7 +183,7 @@ export default function App() {
     <SafeAreaProvider>
       <LanguageProvider>
         <NavigationContainer theme={theme}>
-          <AppTabs token={token} onLogout={logout} />
+          <AppTabs token={token} userId={userId} onLogout={logout} />
         </NavigationContainer>
       </LanguageProvider>
     </SafeAreaProvider>

@@ -8,18 +8,11 @@ import * as DocumentPicker from 'expo-document-picker';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList, DocumentItem } from '../types';
 import { API_BASE_URL, uploadDocument } from '../api/voya';
+import { useLanguage } from '../i18n';
 
 const ACCENT = '#f4a259';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Documents'>;
-
-const DOC_TYPES = [
-  { value: 'PASSEPORT', label: 'Passeport', icon: 'card-outline' as const },
-  { value: 'VISA', label: 'Visa', icon: 'document-attach-outline' as const },
-  { value: 'BILLET', label: 'Billet', icon: 'airplane-outline' as const },
-  { value: 'VOUCHER', label: 'Voucher', icon: 'pricetag-outline' as const },
-  { value: 'AUTRE', label: 'Autre', icon: 'document-text-outline' as const },
-];
 
 const iconForDocType = (type: string): keyof typeof Ionicons.glyphMap => {
   switch (type) {
@@ -32,12 +25,21 @@ const iconForDocType = (type: string): keyof typeof Ionicons.glyphMap => {
 };
 
 export default function DocumentsScreen({ route, navigation }: Props) {
+  const { t } = useLanguage();
   const { voyageId, destination } = route.params;
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [typePickerVisible, setTypePickerVisible] = useState(false);
   const [uploading, setUploading] = useState(false);
+
+  const DOC_TYPES = [
+    { value: 'PASSEPORT', label: 'Passeport', icon: 'card-outline' as const },
+    { value: 'VISA', label: 'Visa', icon: 'document-attach-outline' as const },
+    { value: 'BILLET', label: t('flight'), icon: 'airplane-outline' as const },
+    { value: 'VOUCHER', label: 'Voucher', icon: 'pricetag-outline' as const },
+    { value: 'AUTRE', label: t('otherType'), icon: 'document-text-outline' as const },
+  ];
 
   const load = useCallback(async () => {
     const res = await fetch(`${API_BASE_URL}/voyages/${voyageId}/document`);
@@ -48,7 +50,7 @@ export default function DocumentsScreen({ route, navigation }: Props) {
   }, [voyageId]);
 
   useEffect(() => {
-    navigation.setOptions({ title: `Documents · ${destination}` });
+    navigation.setOptions({ title: `${t('documentsCount')} · ${destination}` });
     load();
   }, [load, navigation, destination]);
 
@@ -57,17 +59,12 @@ export default function DocumentsScreen({ route, navigation }: Props) {
     load();
   };
 
-  const startAddDocument = () => {
-    setTypePickerVisible(true);
-  };
+  const startAddDocument = () => setTypePickerVisible(true);
 
   const pickAndUpload = async (type: string) => {
     setTypePickerVisible(false);
     try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: '*/*',
-        copyToCacheDirectory: true,
-      });
+      const result = await DocumentPicker.getDocumentAsync({ type: '*/*', copyToCacheDirectory: true });
       if (result.canceled) return;
 
       const asset = result.assets[0];
@@ -79,7 +76,7 @@ export default function DocumentsScreen({ route, navigation }: Props) {
       });
       await load();
     } catch (e: any) {
-      Alert.alert('Échec de l\'upload', e.message ?? 'Une erreur est survenue.');
+      Alert.alert(t('genericError'), e.message ?? t('genericError'));
     } finally {
       setUploading(false);
     }
@@ -102,7 +99,7 @@ export default function DocumentsScreen({ route, navigation }: Props) {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={ACCENT} />}
       >
         {documents.length === 0 ? (
-          <Text style={styles.emptyText}>Aucun document pour ce voyage.</Text>
+          <Text style={styles.emptyText}>{t('noDocumentsTrip')}</Text>
         ) : (
           documents.map((d) => (
             <Pressable
@@ -124,32 +121,19 @@ export default function DocumentsScreen({ route, navigation }: Props) {
       </ScrollView>
 
       <Pressable style={styles.fab} onPress={startAddDocument} disabled={uploading}>
-        {uploading ? (
-          <ActivityIndicator size="small" color="#0d2b2b" />
-        ) : (
-          <Ionicons name="add" size={26} color="#0d2b2b" />
-        )}
+        {uploading ? <ActivityIndicator size="small" color="#0d2b2b" /> : <Ionicons name="add" size={26} color="#0d2b2b" />}
       </Pressable>
 
-      <Modal
-        visible={typePickerVisible}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setTypePickerVisible(false)}
-      >
+      <Modal visible={typePickerVisible} transparent animationType="fade" onRequestClose={() => setTypePickerVisible(false)}>
         <Pressable style={styles.modalBackdrop} onPress={() => setTypePickerVisible(false)}>
           <View style={styles.modalSheet}>
             <Text style={styles.modalTitle}>Type de document</Text>
-            {DOC_TYPES.map((t) => (
-              <Pressable
-                key={t.value}
-                style={styles.modalItem}
-                onPress={() => pickAndUpload(t.value)}
-              >
+            {DOC_TYPES.map((dt) => (
+              <Pressable key={dt.value} style={styles.modalItem} onPress={() => pickAndUpload(dt.value)}>
                 <View style={styles.modalIconWrap}>
-                  <Ionicons name={t.icon} size={18} color={ACCENT} />
+                  <Ionicons name={dt.icon} size={18} color={ACCENT} />
                 </View>
-                <Text style={styles.modalItemText}>{t.label}</Text>
+                <Text style={styles.modalItemText}>{dt.label}</Text>
               </Pressable>
             ))}
           </View>
@@ -170,33 +154,12 @@ const styles = StyleSheet.create({
   title: { color: '#ffffff', fontSize: 15, fontWeight: '700', marginBottom: 3 },
   sub: { color: '#8fa3a3', fontSize: 13 },
   fab: {
-    position: 'absolute',
-    right: 20,
-    bottom: 24,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: ACCENT,
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
+    position: 'absolute', right: 20, bottom: 24, width: 56, height: 56, borderRadius: 28,
+    backgroundColor: ACCENT, justifyContent: 'center', alignItems: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6,
   },
-  modalBackdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'flex-end',
-  },
-  modalSheet: {
-    backgroundColor: '#123a3a',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 20,
-    paddingBottom: 32,
-  },
+  modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
+  modalSheet: { backgroundColor: '#123a3a', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, paddingBottom: 32 },
   modalTitle: { color: '#ffffff', fontSize: 16, fontWeight: '700', marginBottom: 14 },
   modalItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12 },
   modalIconWrap: { width: 34, height: 34, borderRadius: 17, backgroundColor: '#1f4d4d', justifyContent: 'center', alignItems: 'center', marginRight: 12 },

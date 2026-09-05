@@ -3,7 +3,8 @@ import { SafeAreaView, View, Text, TextInput, Pressable, StyleSheet, ActivityInd
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList, User } from '../types';
-import { login } from '../api/voya';
+import { login,socialLogin } from '../api/voya';
+//import { socialLogin } from '../api/voya';
 import { useLanguage } from '../i18n';
 
 const ACCENT = '#f4a259';
@@ -32,6 +33,23 @@ export default function LoginScreen({ navigation, onAuthenticated }: Props) {
     }
   };
 
+  const handleSocial = async (provider: 'GOOGLE' | 'APPLE' | 'FACEBOOK') => {
+  setLoading(true);
+  try {
+    // TODO: remplacer par un vrai SDK (Google Sign-In, Apple Auth...) une fois configuré.
+    // Pour l'instant on simule un identifiant unique par appareil/test.
+    const result = await socialLogin({
+      provider,
+      providerUserId: `${provider.toLowerCase()}-${Date.now()}`,
+    });
+    await onAuthenticated(result.accessToken, result.user);
+  } catch (error: any) {
+    Alert.alert(t('connectionError'), error.message ?? t('genericError'));
+  } finally {
+    setLoading(false);
+  }
+};
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
@@ -43,6 +61,18 @@ export default function LoginScreen({ navigation, onAuthenticated }: Props) {
         <Pressable style={styles.button} onPress={submit} disabled={loading}>
           {loading ? <ActivityIndicator color="#0d2b2b" /> : <Text style={styles.buttonText}>{t('signIn')}</Text>}
         </Pressable>
+        <Text style={styles.orText}>{t('orContinueWith')}</Text>
+        <View style={styles.socialRow}>
+        <Pressable style={styles.socialButton} onPress={() => handleSocial('GOOGLE')}>
+        <Ionicons name="logo-google" size={20} color="#ffffff" />
+        </Pressable>
+        <Pressable style={styles.socialButton} onPress={() => handleSocial('FACEBOOK')}>
+       <Ionicons name="logo-facebook" size={20} color="#ffffff" />
+      </Pressable>
+      <Pressable style={styles.socialButton} onPress={() => handleSocial('APPLE')}>
+    <Ionicons name="logo-apple" size={20} color="#ffffff" />
+  </Pressable>
+</View>
         <Pressable onPress={() => navigation.navigate('Register')} style={styles.linkButton}>
           <Text style={styles.link}>{t('createAccountButton')}</Text>
         </Pressable>
@@ -62,4 +92,10 @@ const styles = StyleSheet.create({
   buttonText: { color: '#0d2b2b', fontWeight: '800', fontSize: 16 },
   linkButton: { alignItems: 'center', padding: 18 },
   link: { color: ACCENT, fontWeight: '700' },
+  orText: { color: '#8fa3a3', textAlign: 'center', marginVertical: 16, fontSize: 13 },
+socialRow: { flexDirection: 'row', justifyContent: 'center', gap: 14, marginBottom: 10 },
+socialButton: {
+  width: 52, height: 52, borderRadius: 26, backgroundColor: '#123a3a',
+  borderWidth: 1, borderColor: '#1f4d4d', alignItems: 'center', justifyContent: 'center',
+},
 });

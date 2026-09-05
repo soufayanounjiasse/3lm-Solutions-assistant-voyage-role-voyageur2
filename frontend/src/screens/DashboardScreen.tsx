@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList, Voyage } from '../types';
 import { fetchVoyageById, API_BASE_URL } from '../api/voya';
+import { useLanguage } from '../i18n';
 
 const ACCENT = '#f4a259';
 
@@ -21,6 +22,7 @@ const iconForType = (type: string): keyof typeof Ionicons.glyphMap => {
 };
 
 export default function DashboardScreen({ navigation, route }: Props) {
+  const { t } = useLanguage();
   const { voyageId } = route.params;
   const [voyage, setVoyage] = useState<Voyage | null>(null);
   const [loading, setLoading] = useState(true);
@@ -59,7 +61,7 @@ export default function DashboardScreen({ navigation, route }: Props) {
       <SafeAreaView style={styles.container}>
         <View style={styles.centered}>
           <ActivityIndicator size="large" color={ACCENT} />
-          <Text style={styles.loadingText}>Chargement du voyage...</Text>
+          <Text style={styles.loadingText}>{t('tripLoading')}</Text>
         </View>
       </SafeAreaView>
     );
@@ -70,8 +72,8 @@ export default function DashboardScreen({ navigation, route }: Props) {
       <SafeAreaView style={styles.container}>
         <View style={styles.centered}>
           <Ionicons name="cloud-offline-outline" size={40} color="#f28b82" />
-          <Text style={styles.errorText}>{error ?? 'Voyage introuvable'}</Text>
-          <Text style={styles.errorHint}>Vérifie que le backend tourne sur {API_BASE_URL}</Text>
+          <Text style={styles.errorText}>{error ?? t('tripNotFound')}</Text>
+          <Text style={styles.errorHint}>{t('verifyBackend')} {API_BASE_URL}</Text>
         </View>
       </SafeAreaView>
     );
@@ -92,7 +94,7 @@ export default function DashboardScreen({ navigation, route }: Props) {
           <View style={styles.heroAccentBar} />
           <View style={styles.heroBody}>
             <Text style={styles.heroLabel}>
-              VOYAGE · {formatDate(voyage.dateDebut)} → {formatDate(voyage.dateFin)}
+              {formatDate(voyage.dateDebut)} → {formatDate(voyage.dateFin)}
             </Text>
             <Text style={styles.heroDestination}>{voyage.destination}</Text>
             {prochaineReservation && (
@@ -105,8 +107,8 @@ export default function DashboardScreen({ navigation, route }: Props) {
             )}
             <View style={styles.heroDivider} />
             <View style={styles.heroFooter}>
-              <Text style={styles.heroFooterText}>Réservations : {voyage.reservations.length} confirmées</Text>
-              <Text style={styles.heroFooterText}>Documents : {voyage.documents.length}</Text>
+              <Text style={styles.heroFooterText}>{t('reservations')}: {voyage.reservations.length} {t('confirmedReservations')}</Text>
+              <Text style={styles.heroFooterText}>{t('documentsCount')}: {voyage.documents.length}</Text>
             </View>
           </View>
         </View>
@@ -119,8 +121,8 @@ export default function DashboardScreen({ navigation, route }: Props) {
             <View style={styles.statIconWrap}>
               <Ionicons name="calendar-outline" size={16} color={ACCENT} />
             </View>
-            <Text style={styles.statTitle}>Réservations</Text>
-            <Text style={styles.statValue}>{voyage.reservations.length} actives</Text>
+            <Text style={styles.statTitle}>{t('reservations')}</Text>
+            <Text style={styles.statValue}>{voyage.reservations.length} {t('activeReservations')}</Text>
           </Pressable>
 
           <Pressable
@@ -130,30 +132,30 @@ export default function DashboardScreen({ navigation, route }: Props) {
             <View style={styles.statIconWrap}>
               <Ionicons name="document-text-outline" size={16} color={ACCENT} />
             </View>
-            <Text style={styles.statTitle}>Documents</Text>
-            <Text style={styles.statValue}>{voyage.documents.length} fichiers</Text>
+            <Text style={styles.statTitle}>{t('documentsCount')}</Text>
+            <Text style={styles.statValue}>{voyage.documents.length} {t('filesCount')}</Text>
           </Pressable>
 
           <View style={styles.statCard}>
             <View style={styles.statIconWrap}>
               <Ionicons name="sparkles-outline" size={16} color={ACCENT} />
             </View>
-            <Text style={styles.statTitle}>Recommandations</Text>
-            <Text style={styles.statValue}>Bientôt disponible</Text>
+            <Text style={styles.statTitle}>{t('recommendations')}</Text>
+            <Text style={styles.statValue}>{t('comingSoon')}</Text>
           </View>
 
           <View style={styles.statCard}>
             <View style={styles.statIconWrap}>
               <Ionicons name="briefcase-outline" size={16} color={ACCENT} />
             </View>
-            <Text style={styles.statTitle}>Services</Text>
-            <Text style={styles.statValue}>Bientôt disponible</Text>
+            <Text style={styles.statTitle}>{t('services')}</Text>
+            <Text style={styles.statValue}>{t('comingSoon')}</Text>
           </View>
         </View>
 
-        <Text style={styles.sectionTitle}>À venir</Text>
+        <Text style={styles.sectionTitle}>{t('upcomingSection')}</Text>
         {reservationsTriees.length === 0 ? (
-          <Text style={styles.emptyText}>Aucune réservation pour ce voyage.</Text>
+          <Text style={styles.emptyText}>{t('noReservationsTrip')}</Text>
         ) : (
           reservationsTriees.map((r) => (
             <Pressable

@@ -5,6 +5,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList, DocumentItem } from '../types';
 import { fetchDocument, deleteDocument } from '../api/voya';
 import ConfirmModal from '../components/ConfirmModal';
+import { useLanguage } from '../i18n';
 
 const ACCENT = '#f4a259';
 const DANGER = '#f28b82';
@@ -22,6 +23,7 @@ const iconForDocType = (type: string): keyof typeof Ionicons.glyphMap => {
 };
 
 export default function DocumentDetailScreen({ route, navigation }: Props) {
+  const { t } = useLanguage();
   const { documentId } = route.params;
   const [document, setDocument] = useState<DocumentItem | null>(null);
   const [loading, setLoading] = useState(true);
@@ -29,11 +31,12 @@ export default function DocumentDetailScreen({ route, navigation }: Props) {
   const [confirmVisible, setConfirmVisible] = useState(false);
 
   useEffect(() => {
+    navigation.setOptions({ title: t('documentDetailTitle') });
     fetchDocument(documentId).then((d) => {
       setDocument(d);
       setLoading(false);
     });
-  }, [documentId]);
+  }, [documentId, navigation]);
 
   const confirmDelete = async () => {
     setDeleting(true);
@@ -72,26 +75,26 @@ export default function DocumentDetailScreen({ route, navigation }: Props) {
         </View>
 
         <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Ajouté le</Text>
+          <Text style={styles.infoLabel}>{t('addedOn')}</Text>
           <Text style={styles.infoValue}>{formatDate(document.dateAjout)}</Text>
         </View>
 
         <Pressable style={styles.linkButton} onPress={() => Linking.openURL(document.urlS3)}>
           <Ionicons name="open-outline" size={18} color="#0d2b2b" />
-          <Text style={styles.linkButtonText}>Ouvrir le document</Text>
+          <Text style={styles.linkButtonText}>{t('openDocument')}</Text>
         </Pressable>
 
         <Pressable style={styles.deleteButton} onPress={() => setConfirmVisible(true)}>
           <Ionicons name="trash-outline" size={18} color={DANGER} />
-          <Text style={styles.deleteButtonText}>Supprimer le document</Text>
+          <Text style={styles.deleteButtonText}>{t('deleteDocument')}</Text>
         </Pressable>
       </View>
 
       <ConfirmModal
         visible={confirmVisible}
-        title="Supprimer le document"
-        message="Cette action est définitive. Veux-tu continuer ?"
-        confirmLabel="Supprimer"
+        title={t('deleteDocument')}
+        message={t('deleteDocumentConfirmMessage')}
+        confirmLabel={t('delete')}
         loading={deleting}
         onConfirm={confirmDelete}
         onCancel={() => setConfirmVisible(false)}

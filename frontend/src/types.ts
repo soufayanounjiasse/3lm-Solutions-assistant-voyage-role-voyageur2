@@ -48,6 +48,9 @@ export type UserPreferences = {
   typeVoyage?: 'AFFAIRES' | 'TOURISME' | 'FAMILLE' | 'ETUDIANT';
 };
 export type RootStackParamList = {
+  SettingsList: undefined;
+  ProfileDetail: undefined;
+  Language: undefined;
   Onboarding: undefined;
   MainMenu: undefined;
   Unavailable: { title: string };

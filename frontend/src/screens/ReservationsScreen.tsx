@@ -9,16 +9,11 @@ import { RootStackParamList, Reservation } from '../types';
 import { API_BASE_URL, createReservation } from '../api/voya';
 import DatePickerField from '../components/DatePickerField';
 import SelectField from '../components/SelectField';
+import { useLanguage } from '../i18n';
 
 const ACCENT = '#f4a259';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Reservations'>;
-
-const RES_TYPES = [
-  { value: 'VOL', label: 'Vol', icon: 'airplane' as const },
-  { value: 'HOTEL', label: 'Hôtel', icon: 'bed' as const },
-  { value: 'AUTRE', label: 'Autre', icon: 'ellipse' as const },
-];
 
 const FOURNISSEURS_BY_TYPE: Record<string, string[]> = {
   VOL: ['Air France', 'Camair-Co', 'Ethiopian Airlines', 'Royal Air Maroc', 'Turkish Airlines', 'Emirates'],
@@ -34,7 +29,6 @@ const iconForType = (type: string): keyof typeof Ionicons.glyphMap => {
   }
 };
 
-// Génère une référence lisible sans intervention manuelle, ex: VOL-20260828-3F9A2
 function generateReference(type: string): string {
   const prefixMap: Record<string, string> = { VOL: 'VOL', HOTEL: 'HTL', AUTRE: 'RES' };
   const prefix = prefixMap[type] ?? 'RES';
@@ -44,6 +38,7 @@ function generateReference(type: string): string {
 }
 
 export default function ReservationsScreen({ route, navigation }: Props) {
+  const { t } = useLanguage();
   const { voyageId, destination } = route.params;
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,29 +46,27 @@ export default function ReservationsScreen({ route, navigation }: Props) {
   const [formVisible, setFormVisible] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
+  const RES_TYPES = [
+    { value: 'VOL', label: t('flight'), icon: 'airplane' as const },
+    { value: 'HOTEL', label: t('hotelType'), icon: 'bed' as const },
+    { value: 'AUTRE', label: t('otherType'), icon: 'ellipse' as const },
+  ];
+
   const [type, setType] = useState('VOL');
   const [fournisseur, setFournisseur] = useState('');
   const [dateDebut, setDateDebut] = useState('');
   const [dateFin, setDateFin] = useState('');
 
-const [error, setError] = useState<string | null>(null);
-
-const load = useCallback(async () => {
-  try {
-    setError(null);
+  const load = useCallback(async () => {
     const res = await fetch(`${API_BASE_URL}/voyages/${voyageId}/reservation`);
-    if (!res.ok) throw new Error(`Erreur serveur (${res.status})`);
     const data = await res.json();
     setReservations(data);
-  } catch (e: any) {
-    setError(e.message ?? 'Impossible de charger les réservations');
-  } finally {
     setLoading(false);
     setRefreshing(false);
-  }
-}, [voyageId]);
+  }, [voyageId]);
+
   useEffect(() => {
-    navigation.setOptions({ title: `Réservations · ${destination}` });
+    navigation.setOptions({ title: `${t('reservations')} · ${destination}` });
     load();
   }, [load, navigation, destination]);
 
@@ -84,7 +77,7 @@ const load = useCallback(async () => {
 
   const handleTypeChange = (newType: string) => {
     setType(newType);
-    setFournisseur(''); // le choix précédent ne correspond plus forcément à la nouvelle liste
+    setFournisseur('');
   };
 
   const resetForm = () => {
@@ -96,7 +89,7 @@ const load = useCallback(async () => {
 
   const handleCreate = async () => {
     if (!fournisseur || !dateDebut) {
-      Alert.alert('Champs manquants', 'Choisis un fournisseur et une date de début.');
+      Alert.alert(t('missingFields'), t('missingLogin'));
       return;
     }
     setSubmitting(true);
@@ -112,28 +105,13 @@ const load = useCallback(async () => {
       resetForm();
       await load();
     } catch (e: any) {
-      Alert.alert('Erreur', e.message ?? 'Impossible de créer la réservation.');
+      Alert.alert(t('genericError'), e.message ?? t('genericError'));
     } finally {
       setSubmitting(false);
     }
   };
 
   if (loading) {
-    if (error) {
-  return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.centered}>
-        <Ionicons name="cloud-offline-outline" size={40} color="#f28b82" />
-        <Text style={{ color: '#f28b82', fontSize: 15, fontWeight: '600', marginTop: 10, textAlign: 'center' }}>
-          {error}
-        </Text>
-        <Text style={{ color: '#8fa3a3', fontSize: 13, marginTop: 8, textAlign: 'center' }}>
-          Vérifie que le backend tourne sur {API_BASE_URL}
-        </Text>
-      </View>
-    </SafeAreaView>
-  );
-}
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.centered}>
@@ -150,7 +128,7 @@ const load = useCallback(async () => {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={ACCENT} />}
       >
         {reservations.length === 0 ? (
-          <Text style={styles.emptyText}>Aucune réservation pour ce voyage.</Text>
+          <Text style={styles.emptyText}>{t('noReservationsTrip')}</Text>
         ) : (
           reservations.map((r) => (
             <Pressable
@@ -178,45 +156,43 @@ const load = useCallback(async () => {
       <Modal visible={formVisible} transparent animationType="slide" onRequestClose={() => setFormVisible(false)}>
         <View style={styles.modalBackdrop}>
           <View style={styles.modalSheet}>
-            <Text style={styles.modalTitle}>Nouvelle réservation</Text>
+            <Text style={styles.modalTitle}>{t('newReservation')}</Text>
 
             <View style={styles.typeRow}>
-              {RES_TYPES.map((t) => (
+              {RES_TYPES.map((rt) => (
                 <Pressable
-                  key={t.value}
-                  style={[styles.typeChip, type === t.value && styles.typeChipActive]}
-                  onPress={() => handleTypeChange(t.value)}
+                  key={rt.value}
+                  style={[styles.typeChip, type === rt.value && styles.typeChipActive]}
+                  onPress={() => handleTypeChange(rt.value)}
                 >
-                  <Ionicons name={t.icon} size={16} color={type === t.value ? '#0d2b2b' : ACCENT} />
-                  <Text style={[styles.typeChipText, type === t.value && styles.typeChipTextActive]}>{t.label}</Text>
+                  <Ionicons name={rt.icon} size={16} color={type === rt.value ? '#0d2b2b' : ACCENT} />
+                  <Text style={[styles.typeChipText, type === rt.value && styles.typeChipTextActive]}>{rt.label}</Text>
                 </Pressable>
               ))}
             </View>
 
             <SelectField
-              label="Fournisseur"
+              label={t('supplier')}
               value={fournisseur}
               options={FOURNISSEURS_BY_TYPE[type] ?? []}
               onChange={setFournisseur}
-              placeholder="Choisir un fournisseur"
+              placeholder={t('chooseSupplier')}
             />
 
-            <DatePickerField label="Date de début" value={dateDebut} onChange={setDateDebut} />
-            <DatePickerField label="Date de fin (optionnel)" value={dateFin} onChange={setDateFin} />
+            <DatePickerField label={t('startDate')} value={dateDebut} onChange={setDateDebut} />
+            <DatePickerField label={`${t('endDate')} ${t('optionalLabel')}`} value={dateFin} onChange={setDateFin} />
 
-            <Text style={styles.refHint}>
-              La référence sera générée automatiquement à la création.
-            </Text>
+            <Text style={styles.refHint}>{t('referenceAutoHint')}</Text>
 
             <View style={styles.modalActions}>
               <Pressable style={styles.cancelButton} onPress={() => setFormVisible(false)}>
-                <Text style={styles.cancelButtonText}>Annuler</Text>
+                <Text style={styles.cancelButtonText}>{t('back')}</Text>
               </Pressable>
               <Pressable style={styles.submitButton} onPress={handleCreate} disabled={submitting}>
                 {submitting ? (
                   <ActivityIndicator size="small" color="#0d2b2b" />
                 ) : (
-                  <Text style={styles.submitButtonText}>Créer</Text>
+                  <Text style={styles.submitButtonText}>{t('create')}</Text>
                 )}
               </Pressable>
             </View>

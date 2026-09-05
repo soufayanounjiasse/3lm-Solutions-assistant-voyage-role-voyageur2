@@ -1,8 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import {
-  SafeAreaView, ScrollView, Text, StyleSheet, Pressable, ActivityIndicator, Alert,
-} from 'react-native';
+import React, { useState } from 'react';
+import { SafeAreaView, ScrollView, Text, StyleSheet, Pressable, ActivityIndicator, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { createVoyage } from '../api/voya';
 import DatePickerField from '../components/DatePickerField';
@@ -10,6 +7,7 @@ import SelectField from '../components/SelectField';
 import { useLanguage } from '../i18n';
 
 const ACCENT = '#f4a259';
+
 const DESTINATIONS = [
   'Paris, France', 'Lyon, France', 'Marseille, France',
   'Tunis, Tunisie', 'Casablanca, Maroc', 'Dakar, Sénégal',
@@ -17,27 +15,26 @@ const DESTINATIONS = [
   'Londres, Royaume-Uni', 'New York, États-Unis', 'Dubaï, Émirats Arabes Unis',
 ];
 
-export default function NewVoyageScreen() {
+type Props = {
+  userId: string;
+};
+
+export default function NewVoyageScreen({ userId }: Props) {
   const { t } = useLanguage();
   const [destination, setDestination] = useState('');
   const [dateDebut, setDateDebut] = useState('');
   const [dateFin, setDateFin] = useState('');
   const [loading, setLoading] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
-
-  useEffect(() => {
-    AsyncStorage.getItem('voya_user_id').then(setUserId);
-  }, []);
 
   const handleSubmit = async () => {
-    if (!destination || !dateDebut || !dateFin || !userId) {
-      Alert.alert(t('missingFields'), `${t('chooseDestination')} et ${t('startDate')} / ${t('endDate')}.`);
+    if (!destination || !dateDebut || !dateFin) {
+      Alert.alert(t('missingFields'), t('missingLogin'));
       return;
     }
     setLoading(true);
     try {
       await createVoyage({ userId, destination, dateDebut, dateFin });
-      Alert.alert(t('saved'), `${destination} ${t('savedMessage').toLowerCase()}`);
+      Alert.alert(t('saved'), destination);
       setDestination('');
       setDateDebut('');
       setDateFin('');
