@@ -15,6 +15,22 @@ export async function login(payload: { identifiant: string; password: string }):
   return res.json();
 }
 
+export async function socialLogin(payload: {
+  provider: 'GOOGLE' | 'APPLE' | 'FACEBOOK';
+  providerUserId: string;
+  email?: string;
+  prenom?: string;
+  nom?: string;
+}): Promise<{ user: User; accessToken: string }> {
+  const res = await fetch(`${API_BASE_URL}/auth/social-login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(await readError(res));
+  return res.json();
+}
+
 export async function register(payload: { email?: string; telephone?: string; password: string; prenom: string; nom: string }): Promise<{ user: User; accessToken: string }> {
   const res = await fetch(`${API_BASE_URL}/auth/register`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
   if (!res.ok) throw new Error(await readError(res));
