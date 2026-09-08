@@ -22,6 +22,7 @@ import ProfileScreen from './src/screens/ProfileScreen';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 import SettingsListScreen from './src/screens/SettingsListScreen';
 import LanguageScreen from './src/screens/LanguageScreen';
+import PreferencesScreen from './src/screens/PreferencesScreen';
 import { LanguageProvider } from './src/i18n';
 
 
@@ -58,7 +59,7 @@ function MenuStack() {
   );
 }
 
-function SettingsStack({ token, onLogout }: { token: string; onLogout: () => Promise<void> }) {
+function SettingsStack({ token, userId, onLogout }: { token: string; userId: string; onLogout: () => Promise<void> }) {
   return (
     <Stack.Navigator screenOptions={{ headerShown: true, headerStyle: { backgroundColor: '#123a3a' }, headerTintColor: '#fff' }}>
       <Stack.Screen name="SettingsList" component={SettingsListScreen} options={{ headerShown: false }} />
@@ -66,6 +67,9 @@ function SettingsStack({ token, onLogout }: { token: string; onLogout: () => Pro
       <Stack.Screen name="Language" component={LanguageScreen} options={{ headerShown: false }} />
       <Stack.Screen name="ProfileDetail" options={{ headerShown: false }}>
         {() => <ProfileScreen token={token} onLogout={onLogout} />}
+      </Stack.Screen>
+      <Stack.Screen name="Preferences" options={{ title: '' }}>
+      {() => <PreferencesScreen userId={userId} />}
       </Stack.Screen>
     </Stack.Navigator>
   );
@@ -122,7 +126,7 @@ function AppTabs({ token, userId, onLogout }: { token: string; userId: string; o
           ),
         }}
       >
-        {() => <SettingsStack token={token} onLogout={onLogout} />}
+        {() => <SettingsStack token={token} userId={userId} onLogout={onLogout} />}
       </Tab.Screen>
           </Tab.Navigator>
         );

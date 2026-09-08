@@ -228,4 +228,20 @@ export async function deleteDocument(id: string): Promise<void> {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.message ?? `Erreur serveur (${res.status})`);
   }
+  export async function fetchPreferences(userId: string) {
+  const res = await fetch(`${API_BASE_URL}/users/${userId}/preferences`);
+  if (!res.ok) throw new Error(`Erreur serveur (${res.status})`);
+  return res.json();
+}
+
+export async function updatePreferences(userId: string, payload: any) {
+  const res = await fetch(`${API_BASE_URL}/users/${userId}/preferences`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`Erreur serveur (${res.status})`);
+  return res.json();
+}
+
 }

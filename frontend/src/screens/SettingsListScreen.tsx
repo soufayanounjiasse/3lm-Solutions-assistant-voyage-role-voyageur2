@@ -19,6 +19,7 @@ export default function SettingsListScreen({ navigation }: Props) {
   const { t } = useLanguage();
 
   const OPTIONS: OptionItem[] = [
+    { labelKey: 'preferences', icon: 'options-outline', onPress: () => navigation.navigate('Preferences') },
     { labelKey: 'profile', icon: 'person-outline', onPress: () => navigation.navigate('ProfileDetail') },
     { labelKey: 'security', icon: 'lock-closed-outline', onPress: () => navigation.navigate('Unavailable', { title: t('security') }) },
     { labelKey: 'termsOfUse', icon: 'document-text-outline', onPress: () => navigation.navigate('Unavailable', { title: t('termsOfUse') }) },
