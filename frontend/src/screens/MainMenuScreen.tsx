@@ -20,7 +20,7 @@ const MODULES: ModuleItem[] = [
   { labelKey: 'onboardingModule', icon: 'sparkles-outline', available: false },
   { labelKey: 'myTrips', icon: 'airplane-outline', available: true, route: 'VoyagesList' },
   { labelKey: 'reservations', icon: 'calendar-outline', available: true, route: 'SelectVoyageForReservation' },
-  { labelKey: 'assistant', icon: 'chatbubble-ellipses-outline', available: false },
+  { labelKey: 'assistant', icon: 'chatbubble-ellipses-outline', available: true, route: 'Assistant' },
   { labelKey: 'esim', icon: 'cellular-outline', available: false },
   { labelKey: 'driver', icon: 'car-outline', available: false },
   { labelKey: 'hotels', icon: 'bed-outline', available: false },

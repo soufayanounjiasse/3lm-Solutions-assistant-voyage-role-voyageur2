@@ -5,11 +5,11 @@ import { useLanguage } from '../i18n';
 
 const ACCENT = '#f4a259';
 
-type Props = { userId: string };
+type Props = { token: string; userId: string };
 
 const TRIP_TYPES = ['TOURISME', 'AFFAIRES', 'FAMILLE', 'ETUDIANT'] as const;
 
-export default function PreferencesScreen({ userId }: Props) {
+export default function PreferencesScreen({ token, userId }: Props) {
   const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -19,7 +19,7 @@ export default function PreferencesScreen({ userId }: Props) {
   const [typeVoyage, setTypeVoyage] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    fetchPreferences(userId)
+    fetchPreferences(token, userId)
       .then((pref) => {
         setBudgetMin(pref.budgetMin?.toString() ?? '');
         setBudgetMax(pref.budgetMax?.toString() ?? '');
@@ -28,12 +28,12 @@ export default function PreferencesScreen({ userId }: Props) {
       })
       .catch(() => Alert.alert(t('genericError'), t('noProfile')))
       .finally(() => setLoading(false));
-  }, [userId]);
+  }, [token, userId]);
 
   const handleSave = async () => {
     setSaving(true);
     try {
-      await updatePreferences(userId, {
+      await updatePreferences(token, userId, {
         budgetMin: budgetMin ? Number(budgetMin) : undefined,
         budgetMax: budgetMax ? Number(budgetMax) : undefined,
         centresInteret: centresInteret ? centresInteret.split(',').map((s) => s.trim()).filter(Boolean) : [],

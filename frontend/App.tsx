@@ -23,6 +23,7 @@ import OnboardingScreen from './src/screens/OnboardingScreen';
 import SettingsListScreen from './src/screens/SettingsListScreen';
 import LanguageScreen from './src/screens/LanguageScreen';
 import PreferencesScreen from './src/screens/PreferencesScreen';
+import AssistantScreen from './src/screens/AssistantScreen';
 import { LanguageProvider } from './src/i18n';
 
 
@@ -55,6 +56,7 @@ function MenuStack() {
       <Stack.Screen name="Documents" component={DocumentsScreen} options={{ headerShown: true }} />
       <Stack.Screen name="DocumentDetail" component={DocumentDetailScreen} options={{ headerShown: true, title: 'Détail document' }} />
       <Stack.Screen name="SelectVoyageForReservation" component={SelectVoyageForReservationScreen} options={{ headerShown: true, title: 'Sélectionner un voyage' }} />
+      <Stack.Screen name="Assistant" component={AssistantScreen} options={{ headerShown: true, title: 'Assistant IA' }} />
     </Stack.Navigator>
   );
 }
@@ -69,7 +71,7 @@ function SettingsStack({ token, userId, onLogout }: { token: string; userId: str
         {() => <ProfileScreen token={token} onLogout={onLogout} />}
       </Stack.Screen>
       <Stack.Screen name="Preferences" options={{ title: '' }}>
-      {() => <PreferencesScreen userId={userId} />}
+      {() => <PreferencesScreen token={token} userId={userId} />}
       </Stack.Screen>
     </Stack.Navigator>
   );
