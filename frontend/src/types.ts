@@ -50,6 +50,7 @@ export type UserPreferences = {
 export type RootStackParamList = {
   Preferences: undefined;
   Assistant: undefined;
+  Esim: undefined;
   SettingsList: undefined;
   ProfileDetail: undefined;
   Language: undefined;

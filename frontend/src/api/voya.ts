@@ -49,6 +49,54 @@ export async function chatAssistant(message: string, history: AssistantMessage[]
   return res.json();
 }
 
+export type EsimPlan = {
+  id: string;
+  country: string;
+  countryCode: string;
+  provider: string;
+  dataMb: number;
+  durationDays: number;
+  price: number;
+  currency: string;
+};
+
+export type EsimOrder = EsimPlan & {
+  id: string;
+  userId: string;
+  status: 'CONFIRMED' | 'ACTIVATED';
+  activationCode: string;
+  qrCodeDataUrl: string;
+  dataUsedMb: number;
+};
+
+export async function fetchEsimPlans(): Promise<EsimPlan[]> {
+  const res = await fetch(`${API_BASE_URL}/esims/plans`);
+  if (!res.ok) throw new Error(await readError(res));
+  return res.json();
+}
+
+export async function fetchEsimOrders(userId: string): Promise<EsimOrder[]> {
+  const res = await fetch(`${API_BASE_URL}/esims/orders?userId=${encodeURIComponent(userId)}`);
+  if (!res.ok) throw new Error(await readError(res));
+  return res.json();
+}
+
+export async function purchaseEsim(userId: string, planId: string): Promise<EsimOrder> {
+  const res = await fetch(`${API_BASE_URL}/esims/orders`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId, planId }),
+  });
+  if (!res.ok) throw new Error(await readError(res));
+  return res.json();
+}
+
+export async function activateEsim(orderId: string): Promise<EsimOrder> {
+  const res = await fetch(`${API_BASE_URL}/esims/orders/${orderId}/activate`, { method: 'PATCH' });
+  if (!res.ok) throw new Error(await readError(res));
+  return res.json();
+}
+
 export async function fetchProfile(token: string): Promise<User> {
   const res = await fetch(`${API_BASE_URL}/users/me`, { headers: { Authorization: `Bearer ${token}` } });
   if (!res.ok) throw new Error(await readError(res));

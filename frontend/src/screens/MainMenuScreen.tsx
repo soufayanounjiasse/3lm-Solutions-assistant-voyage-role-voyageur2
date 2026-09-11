@@ -21,7 +21,7 @@ const MODULES: ModuleItem[] = [
   { labelKey: 'myTrips', icon: 'airplane-outline', available: true, route: 'VoyagesList' },
   { labelKey: 'reservations', icon: 'calendar-outline', available: true, route: 'SelectVoyageForReservation' },
   { labelKey: 'assistant', icon: 'chatbubble-ellipses-outline', available: true, route: 'Assistant' },
-  { labelKey: 'esim', icon: 'cellular-outline', available: false },
+  { labelKey: 'esim', icon: 'cellular-outline', available: true, route: 'Esim' },
   { labelKey: 'driver', icon: 'car-outline', available: false },
   { labelKey: 'hotels', icon: 'bed-outline', available: false },
   { labelKey: 'marketplace', icon: 'storefront-outline', available: false },
