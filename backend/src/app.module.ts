@@ -7,6 +7,10 @@ import { TripModule } from './trip/trip.module';
 import { UserModule } from './user/user.module';
 import { AssistantModule } from './assistant/assistant.module';
 import { EsimModule } from './esim/esim.module';
+import { HotelModule } from './hotel/hotel.module';
+import { MarketplaceModule } from './marketplace/marketplace.module';
+import { TransportModule } from './transport/transport.module';
+import { PaymentModule } from './payment/payment.module';
 
 @Module({
   imports: [
@@ -31,6 +35,10 @@ import { EsimModule } from './esim/esim.module';
     UserModule,
     AssistantModule,
     EsimModule,
+    HotelModule,
+    MarketplaceModule,
+    TransportModule,
+    PaymentModule,
   ],
   controllers: [AppController],
   providers: [AppService],

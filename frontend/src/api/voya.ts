@@ -60,13 +60,16 @@ export type EsimPlan = {
   currency: string;
 };
 
-export type EsimOrder = EsimPlan & {
+export type PaymentMethod = 'CARD' | 'MOBILE' | 'WALLET';
+
+export type EsimOrder = Omit<EsimPlan, 'continent' | 'countryCode'> & {
   id: string;
   userId: string;
   status: 'CONFIRMED' | 'ACTIVATED';
   activationCode: string;
   qrCodeDataUrl: string;
   dataUsedMb: number;
+  paymentMethod: PaymentMethod;
 };
 
 export async function fetchEsimPlans(): Promise<EsimPlan[]> {
@@ -81,11 +84,11 @@ export async function fetchEsimOrders(userId: string): Promise<EsimOrder[]> {
   return res.json();
 }
 
-export async function purchaseEsim(userId: string, planId: string): Promise<EsimOrder> {
+export async function purchaseEsim(userId: string, planId: string, paymentMethod: PaymentMethod): Promise<EsimOrder> {
   const res = await fetch(`${API_BASE_URL}/esims/orders`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId, planId }),
+    body: JSON.stringify({ userId, planId, paymentMethod }),
   });
   if (!res.ok) throw new Error(await readError(res));
   return res.json();

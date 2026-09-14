@@ -5,6 +5,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { PaymentMethod } from '../../payment/entities/payment-transaction.entity';
 
 export enum EsimOrderStatus {
   CONFIRMED = 'CONFIRMED',
@@ -39,6 +40,9 @@ export class EsimOrder {
 
   @Column({ length: 3, default: 'EUR' })
   currency: string;
+
+  @Column({ name: 'payment_method', type: 'enum', enum: PaymentMethod })
+  paymentMethod: PaymentMethod;
 
   @Column({ type: 'enum', enum: EsimOrderStatus, default: EsimOrderStatus.CONFIRMED })
   status: EsimOrderStatus;

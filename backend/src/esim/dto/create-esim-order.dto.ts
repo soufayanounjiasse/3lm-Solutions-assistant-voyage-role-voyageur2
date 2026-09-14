@@ -1,4 +1,7 @@
-import { IsNotEmpty, IsUUID } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsUUID } from 'class-validator';
+import { PaymentMethod } from '../../payment/entities/payment-transaction.entity';
+
+export { PaymentMethod as EsimPaymentMethod } from '../../payment/entities/payment-transaction.entity';
 
 export class CreateEsimOrderDto {
   @IsUUID()
@@ -6,4 +9,7 @@ export class CreateEsimOrderDto {
 
   @IsNotEmpty()
   planId: string;
+
+  @IsEnum(PaymentMethod)
+  paymentMethod: PaymentMethod;
 }
