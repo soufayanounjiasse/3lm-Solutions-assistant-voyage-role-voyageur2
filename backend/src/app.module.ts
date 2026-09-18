@@ -11,6 +11,7 @@ import { HotelModule } from './hotel/hotel.module';
 import { MarketplaceModule } from './marketplace/marketplace.module';
 import { TransportModule } from './transport/transport.module';
 import { PaymentModule } from './payment/payment.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { PaymentModule } from './payment/payment.module';
         synchronize: false,
       }),
     }),
+    ScheduleModule.forRoot(),
     TripModule,
     UserModule,
     AssistantModule,

@@ -67,4 +67,7 @@ export class EsimOrder {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
+
+  @Column({ name: 'external_order_id', nullable: true })
+externalOrderId: string;
 }
