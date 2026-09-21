@@ -22,7 +22,14 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-font"
+      "expo-font",
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Autoriser Voya à utiliser le microphone.",
+          "speechRecognitionPermission": "Autoriser Voya à reconnaître la parole."
+        }
+      ]
     ]
   }
 }

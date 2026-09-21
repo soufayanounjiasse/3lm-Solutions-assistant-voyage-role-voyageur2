@@ -47,6 +47,7 @@ export class EsimService {
     const order = this.orderRepository.create({
       id: orderId,
       userId: dto.userId,
+      voyageId: dto.voyageId ?? null,
       planId: plan.id,
       country: plan.country,
       provider: plan.provider,

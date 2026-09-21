@@ -1,4 +1,4 @@
-import { Voyage, Reservation, DocumentItem, User, UserPreferences } from '../types';
+import { Voyage, Reservation, DocumentItem, User, UserPreferences, Wallet } from '../types';
 import { getCached, setCached } from './cache'
 
 export const API_BASE_URL = 'http://localhost:3000';
@@ -61,6 +61,25 @@ export type EsimPlan = {
 };
 
 export type PaymentMethod = 'CARD' | 'MOBILE' | 'WALLET';
+
+export type TravelWallet = {
+  id: string;
+  userId: string;
+  balance: number | string;
+  currency: string;
+  preferredMethod: PaymentMethod;
+};
+
+export type PaymentReceipt = {
+  id: string;
+  serviceType: string;
+  amount: number | string;
+  currency: string;
+  method: PaymentMethod;
+  status: 'PAID' | 'FAILED';
+  receiptNumber: string;
+  createdAt: string;
+};
 
 export type EsimOrder = Omit<EsimPlan, 'continent' | 'countryCode'> & {
   id: string;
@@ -291,4 +310,31 @@ export async function deleteDocument(id: string): Promise<void> {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.message ?? `Erreur serveur (${res.status})`);
   }
+}
+
+export async function fetchWallet(voyageId: string): Promise<Wallet> {
+  const cacheKey = `wallet_${voyageId}`;
+  try {
+    const res = await fetch(`${API_BASE_URL}/wallet/voyages/${voyageId}`);
+    if (!res.ok) throw new Error(`Erreur serveur (${res.status})`);
+    const data: Wallet = await res.json();
+    await setCached(cacheKey, data);
+    return data;
+  } catch (error) {
+    const cached = await getCached<Wallet>(cacheKey);
+    if (cached) return cached;
+    throw error;
+  }
+}
+
+export async function fetchPaymentWallet(userId: string): Promise<TravelWallet> {
+  const res = await fetch(`${API_BASE_URL}/payments/wallet?userId=${encodeURIComponent(userId)}`);
+  if (!res.ok) throw new Error(await readError(res));
+  return res.json();
+}
+
+export async function fetchPaymentReceipts(userId: string): Promise<PaymentReceipt[]> {
+  const res = await fetch(`${API_BASE_URL}/payments/receipts?userId=${encodeURIComponent(userId)}`);
+  if (!res.ok) throw new Error(await readError(res));
+  return res.json();
 }

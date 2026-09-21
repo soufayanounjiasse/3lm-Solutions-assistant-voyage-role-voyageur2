@@ -20,6 +20,9 @@ export class EsimOrder {
   @Column({ name: 'user_id', type: 'uuid' })
   userId: string;
 
+  @Column({ name: 'voyage_id', type: 'uuid', nullable: true })
+  voyageId: string | null;
+
   @Column({ name: 'plan_id' })
   planId: string;
 

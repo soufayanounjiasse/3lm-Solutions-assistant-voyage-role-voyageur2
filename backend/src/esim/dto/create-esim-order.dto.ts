@@ -7,6 +7,9 @@ export class CreateEsimOrderDto {
   @IsUUID()
   userId: string;
 
+  @IsUUID()
+  voyageId?: string;
+
   @IsNotEmpty()
   planId: string;
 

@@ -23,7 +23,7 @@ const statutColor = (statut: string) => {
   }
 };
 
-export default function VoyagesListScreen({ navigation }: Props) {
+export default function VoyagesListScreen({ navigation, route }: Props) {
   const { t } = useLanguage();
   const [voyages, setVoyages] = useState<Voyage[]>([]);
   const [activeTab, setActiveTab] = useState<string | undefined>(undefined);
@@ -114,7 +114,9 @@ export default function VoyagesListScreen({ navigation }: Props) {
               <Pressable
                 key={v.id}
                 style={styles.card}
-                onPress={() => navigation.navigate('Dashboard', { voyageId: v.id })}
+                onPress={() => route.params?.mode === 'wallet'
+                  ? navigation.navigate('Wallet', { voyageId: v.id, destination: v.destination })
+                  : navigation.navigate('Dashboard', { voyageId: v.id })}
               >
                 <View style={styles.cardHeader}>
                   <Text style={styles.cardDestination}>{v.destination}</Text>

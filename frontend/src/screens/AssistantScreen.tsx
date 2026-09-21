@@ -1,18 +1,25 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, KeyboardAvoidingView, Platform, Pressable, SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { chatAssistant, AssistantMessage } from '../api/voya';
 import { useLanguage } from '../i18n';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../types';
 
 type Message = AssistantMessage & { id: string };
+type Props = NativeStackScreenProps<RootStackParamList, 'Assistant'>;
 
 const ACCENT = '#f4a259';
 
-export default function AssistantScreen() {
+export default function AssistantScreen({ route }: Props) {
   const { t } = useLanguage();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
+
+  useEffect(() => {
+    if (route.params?.initialMessage) setInput(route.params.initialMessage);
+  }, [route.params?.initialMessage]);
 
   const sendMessage = async () => {
     const content = input.trim();

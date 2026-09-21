@@ -11,6 +11,7 @@ import { HotelModule } from './hotel/hotel.module';
 import { MarketplaceModule } from './marketplace/marketplace.module';
 import { TransportModule } from './transport/transport.module';
 import { PaymentModule } from './payment/payment.module';
+import { WalletModule } from './wallet/wallet.module';
 import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
@@ -41,6 +42,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     MarketplaceModule,
     TransportModule,
     PaymentModule,
+    WalletModule,
   ],
   controllers: [AppController],
   providers: [AppService],

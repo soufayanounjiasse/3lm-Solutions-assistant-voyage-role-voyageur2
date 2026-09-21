@@ -25,7 +25,10 @@ import LanguageScreen from './src/screens/LanguageScreen';
 import PreferencesScreen from './src/screens/PreferencesScreen';
 import AssistantScreen from './src/screens/AssistantScreen';
 import EsimScreen from './src/screens/EsimScreen';
+import WalletScreen from './src/screens/WalletScreen';
+import PaymentScreen from './src/screens/PaymentScreen';
 import { LanguageProvider } from './src/i18n';
+import { AccessibilityProvider } from './src/accessibility';
 
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -60,6 +63,10 @@ function MenuStack({ userId }: { userId: string }) {
       <Stack.Screen name="Assistant" component={AssistantScreen} options={{ headerShown: true, title: 'Assistant IA' }} />
       <Stack.Screen name="Esim" options={{ headerShown: true, title: 'eSIM' }}>
         {() => <EsimScreen userId={userId} />}
+      </Stack.Screen>
+      <Stack.Screen name="Wallet" component={WalletScreen} options={{ headerShown: true }} />
+      <Stack.Screen name="Payment" options={{ headerShown: true, title: 'Paiement' }}>
+        {() => <PaymentScreen userId={userId} />}
       </Stack.Screen>
     </Stack.Navigator>
   );
@@ -173,6 +180,7 @@ export default function App() {
     return (
       <SafeAreaProvider>
         <LanguageProvider>
+          <AccessibilityProvider>
           <NavigationContainer theme={theme}>
             <Stack.Navigator screenOptions={{ headerShown: true, headerStyle: { backgroundColor: '#123a3a' }, headerTintColor: '#fff' }}>
               <Stack.Screen name="Onboarding" component={OnboardingScreen} options={{ headerShown: false }} />
@@ -184,6 +192,7 @@ export default function App() {
               </Stack.Screen>
             </Stack.Navigator>
           </NavigationContainer>
+          </AccessibilityProvider>
         </LanguageProvider>
       </SafeAreaProvider>
     );
@@ -192,9 +201,11 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <LanguageProvider>
+        <AccessibilityProvider>
         <NavigationContainer theme={theme}>
           <AppTabs token={token} userId={userId} onLogout={logout} />
         </NavigationContainer>
+        </AccessibilityProvider>
       </LanguageProvider>
     </SafeAreaProvider>
   );

@@ -28,6 +28,19 @@ export type Voyage = {
   documents: DocumentItem[];
 };
 
+export type Wallet = {
+  voyage: Voyage;
+  reservations: Reservation[];
+  documents: DocumentItem[];
+  esims: Array<{
+    id: string;
+    country: string;
+    dataMb: number;
+    dataUsedMb: number;
+    status: string;
+  }>;
+};
+
 export type User = {
   id: string;
   email?: string;
@@ -49,8 +62,10 @@ export type UserPreferences = {
 };
 export type RootStackParamList = {
   Preferences: undefined;
-  Assistant: undefined;
+  Assistant: { initialMessage?: string } | undefined;
   Esim: undefined;
+  Payment: undefined;
+  Wallet: { voyageId: string; destination: string };
   SettingsList: undefined;
   ProfileDetail: undefined;
   Language: undefined;
@@ -58,7 +73,7 @@ export type RootStackParamList = {
   MainMenu: undefined;
   Unavailable: { title: string };
   SelectVoyageForReservation: undefined;
-  VoyagesList: undefined;
+  VoyagesList: { mode?: 'wallet' } | undefined;
   Dashboard: { voyageId: string };
   Reservations: { voyageId: string; destination: string };
   ReservationDetail: { reservationId: string };

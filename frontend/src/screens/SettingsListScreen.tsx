@@ -2,6 +2,7 @@ import React from 'react';
 import { SafeAreaView, ScrollView, View, Text, StyleSheet, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLanguage } from '../i18n';
+import { useAccessibility } from '../accessibility';
 
 const ACCENT = '#f4a259';
 
@@ -17,6 +18,7 @@ type OptionItem = {
 
 export default function SettingsListScreen({ navigation }: Props) {
   const { t } = useLanguage();
+  const { simpleMode, setSimpleMode } = useAccessibility();
 
   const OPTIONS: OptionItem[] = [
     { labelKey: 'preferences', icon: 'options-outline', onPress: () => navigation.navigate('Preferences') },
@@ -34,6 +36,11 @@ export default function SettingsListScreen({ navigation }: Props) {
     <SafeAreaView style={styles.container}>
       <Text style={styles.header}>{t('settingsTitle')}</Text>
       <ScrollView contentContainerStyle={styles.list}>
+        <Pressable style={styles.simpleCard} onPress={() => setSimpleMode(!simpleMode)} accessibilityRole="switch" accessibilityState={{ checked: simpleMode }}>
+          <View style={styles.iconWrap}><Ionicons name="accessibility-outline" size={20} color={ACCENT} /></View>
+          <View style={styles.simpleText}><Text style={styles.label}>{t('simpleMode')}</Text><Text style={styles.description}>{t('simpleModeDescription')}</Text></View>
+          <View style={[styles.switch, simpleMode && styles.switchActive]}><View style={[styles.switchThumb, simpleMode && styles.switchThumbActive]} /></View>
+        </Pressable>
         {OPTIONS.map((opt) => (
           <Pressable key={opt.labelKey} style={styles.item} onPress={opt.onPress}>
             <View style={styles.iconWrap}>
@@ -56,6 +63,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', backgroundColor: '#123a3a',
     borderRadius: 14, padding: 14, marginBottom: 10,
   },
+  simpleCard: {
+    flexDirection: 'row', alignItems: 'center', backgroundColor: '#123a3a',
+    borderRadius: 14, padding: 14, marginBottom: 16, borderWidth: 1, borderColor: ACCENT,
+  },
+  simpleText: { flex: 1 },
+  description: { color: '#9bb0b0', fontSize: 12, marginTop: 3 },
+  switch: { width: 46, height: 26, borderRadius: 13, backgroundColor: '#1f4d4d', padding: 3, justifyContent: 'center' },
+  switchActive: { backgroundColor: ACCENT },
+  switchThumb: { width: 20, height: 20, borderRadius: 10, backgroundColor: '#9bb0b0' },
+  switchThumbActive: { alignSelf: 'flex-end', backgroundColor: '#0d2b2b' },
   iconWrap: {
     width: 36, height: 36, borderRadius: 18, backgroundColor: '#1f4d4d',
     justifyContent: 'center', alignItems: 'center', marginRight: 12,
