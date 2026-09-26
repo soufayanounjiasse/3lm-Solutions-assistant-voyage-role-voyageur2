@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
 import { CreateTransportBookingDto } from './dto/create-transport-booking.dto';
 import { UpdateTransportBookingDto } from './dto/update-transport-booking.dto';
 import { TransportService } from './transport.service';
@@ -18,7 +18,7 @@ export class TransportController {
   }
 
   @Get('bookings')
-  bookings(@Query('userId') userId: string) {
+  bookings(@Query('userId', new ParseUUIDPipe()) userId: string) {
     return this.transportService.listBookings(userId);
   }
 
