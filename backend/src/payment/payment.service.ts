@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { randomBytes } from 'crypto';
 import { Repository } from 'typeorm';
 import { CreatePaymentDto } from './dto/create-payment.dto';
+import { TopUpWalletDto } from './dto/top-up-wallet.dto';
 import { UpdatePaymentPreferenceDto } from './dto/update-payment-preference.dto';
 import {
   PaymentMethod,
@@ -108,6 +109,34 @@ export class PaymentService {
         preferredMethod: PaymentMethod.CARD,
       }),
     );
+  }
+
+  async topUpWallet(dto: TopUpWalletDto): Promise<TravelWallet> {
+    const wallet = await this.getWallet(dto.userId);
+    if (wallet.currency !== dto.currency) {
+      throw new BadRequestException(
+        `Le portefeuille est libellé en ${wallet.currency}.`,
+      );
+    }
+
+    wallet.balance = Number(wallet.balance) + dto.amount;
+    const updatedWallet = await this.walletRepository.save(wallet);
+
+    const receipt = this.paymentRepository.create({
+      userId: dto.userId,
+      serviceType: 'WALLET_TOP_UP',
+      serviceId: wallet.id,
+      amount: dto.amount,
+      currency: dto.currency,
+      method: PaymentMethod.CARD,
+      status: PaymentStatus.PAID,
+      provider: 'wallet-top-up',
+      providerPaymentId: `wallet_top_up_${randomBytes(12).toString('hex')}`,
+      receiptNumber: `VOYA-${Date.now()}-${randomBytes(4).toString('hex').toUpperCase()}`,
+    });
+    await this.paymentRepository.save(receipt);
+
+    return updatedWallet;
   }
 
   async updatePreference(

@@ -1,11 +1,9 @@
 import React from 'react';
-import { Alert, SafeAreaView, ScrollView, View, Text, StyleSheet, Pressable } from 'react-native';
+import { SafeAreaView, ScrollView, View, Text, StyleSheet, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types';
 import { useLanguage } from '../i18n';
-import { useAccessibility } from '../accessibility';
-import VoiceCommandButton from '../components/VoiceCommandButton';
 
 const ACCENT = '#f4a259';
 
@@ -20,16 +18,16 @@ type ModuleItem = {
 };
 
 const MODULES: ModuleItem[] = [
-  { labelKey: 'onboardingModule', icon: 'sparkles-outline', available: false },
   { labelKey: 'myTrips', icon: 'airplane-outline', available: true, route: 'VoyagesList' },
   { labelKey: 'reservations', icon: 'calendar-outline', available: true, route: 'SelectVoyageForReservation' },
   { labelKey: 'assistant', icon: 'chatbubble-ellipses-outline', available: true, route: 'Assistant' },
   { labelKey: 'esim', icon: 'cellular-outline', available: true, route: 'Esim' },
-  { labelKey: 'driver', icon: 'car-outline', available: false },
-  { labelKey: 'hotels', icon: 'bed-outline', available: false },
-  { labelKey: 'marketplace', icon: 'storefront-outline', available: false },
-  { labelKey: 'wallet', icon: 'wallet-outline', available: true, route: 'VoyagesList', params: { mode: 'wallet' } },
-  { labelKey: 'payment', icon: 'card-outline', available: true, route: 'Payment' },
+  { labelKey: 'hotels', icon: 'bed-outline', available: true, route: 'Hotel' },
+  { labelKey: 'marketplace', icon: 'storefront-outline', available: true, route: 'Marketplace' },
+  { labelKey: 'driver', icon: 'car-outline', available: true, route: 'Transport' },
+  { labelKey: 'emergency', icon: 'medical-outline', available: true, route: 'Emergency' },
+  { labelKey: 'wallet', icon: 'wallet-outline', available: true, route: 'Payment' },
+  { labelKey: 'payment', icon: 'card-outline', available: false },
   { labelKey: 'simpleMode', icon: 'accessibility-outline', available: false },
 ];
 
@@ -42,14 +40,6 @@ const TOP_ICONS: { key: string; icon: keyof typeof Ionicons.glyphMap; labelKey: 
 
 export default function MainMenuScreen({ navigation }: Props) {
   const { t } = useLanguage();
-  const { simpleMode } = useAccessibility();
-
-  const handleVoiceCommand = (command: string) => {
-    Alert.alert(t('voiceConfirm'), command, [
-      { text: t('cancel'), style: 'cancel' },
-      { text: t('confirm'), onPress: () => navigation.navigate('Assistant', { initialMessage: command }) },
-    ]);
-  };
 
   const handlePress = (item: ModuleItem) => {
     if (item.available && item.route) {
@@ -64,10 +54,9 @@ export default function MainMenuScreen({ navigation }: Props) {
       <View style={styles.headerRow}>
         <Text style={styles.header}>{t('menu')}</Text>
         <View style={styles.topIcons}>
-          <VoiceCommandButton onCommand={handleVoiceCommand} />
           {TOP_ICONS.map((icon) => (
             <Pressable
-              key={icon.labelKey}
+              key={icon.key}
               style={styles.topIconButton}
               onPress={() => navigation.navigate('Unavailable', { title: t(icon.labelKey) })}
             >
@@ -76,13 +65,13 @@ export default function MainMenuScreen({ navigation }: Props) {
           ))}
         </View>
       </View>
-      <ScrollView contentContainerStyle={[styles.grid, simpleMode && styles.simpleGrid]}>
-        {(simpleMode ? MODULES.filter((item) => ['myTrips', 'reservations', 'assistant', 'payment'].includes(item.labelKey)) : MODULES).map((item) => (
-          <Pressable key={item.labelKey} style={[styles.card, simpleMode && styles.simpleCard]} onPress={() => handlePress(item)}>
+      <ScrollView contentContainerStyle={styles.grid}>
+        {MODULES.map((item) => (
+          <Pressable key={item.labelKey} style={styles.card} onPress={() => handlePress(item)}>
             <View style={[styles.iconWrap, item.available && styles.iconWrapActive]}>
               <Ionicons name={item.icon} size={26} color={item.available ? '#0d2b2b' : ACCENT} />
             </View>
-            <Text style={[styles.label, simpleMode && styles.simpleLabel]}>{t(item.labelKey)}</Text>
+            <Text style={styles.label}>{t(item.labelKey)}</Text>
             {!item.available && <Text style={styles.badge}>{t('soon')}</Text>}
           </Pressable>
         ))}
@@ -92,24 +81,21 @@ export default function MainMenuScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0d2b2b' },
+  container: { flex: 1, backgroundColor: '#f8f6ef' },
   headerRow: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     paddingHorizontal: 20, paddingTop: 20, paddingBottom: 10,
   },
-  header: { color: '#ffffff', fontSize: 24, fontWeight: '800' },
+  header: { color: '#123a3a', fontSize: 24, fontWeight: '800' },
   topIcons: { flexDirection: 'row', gap: 8 },
   topIconButton: {
-    width: 36, height: 36, borderRadius: 18, backgroundColor: '#123a3a',
+    width: 36, height: 36, borderRadius: 18, backgroundColor: '#fff', borderWidth: 1, borderColor: '#e3dacb',
     justifyContent: 'center', alignItems: 'center',
   },
   grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', paddingHorizontal: 16, paddingBottom: 30 },
-  simpleGrid: { gap: 14 },
-  card: { width: '31%', backgroundColor: '#123a3a', borderRadius: 16, paddingVertical: 18, alignItems: 'center', marginBottom: 14 },
-  simpleCard: { width: '100%', minHeight: 90, flexDirection: 'row', justifyContent: 'flex-start', paddingHorizontal: 20, gap: 16 },
-  iconWrap: { width: 50, height: 50, borderRadius: 25, backgroundColor: '#1f4d4d', justifyContent: 'center', alignItems: 'center', marginBottom: 8 },
+  card: { width: '31%', backgroundColor: '#fff', borderColor: '#e3dacb', borderWidth: 1, borderRadius: 16, paddingVertical: 18, alignItems: 'center', marginBottom: 14 },
+  iconWrap: { width: 50, height: 50, borderRadius: 25, backgroundColor: '#edf1f1', justifyContent: 'center', alignItems: 'center', marginBottom: 8 },
   iconWrapActive: { backgroundColor: ACCENT },
-  label: { color: '#ffffff', fontSize: 12, fontWeight: '600', textAlign: 'center' },
-  simpleLabel: { fontSize: 18, textAlign: 'left' },
-  badge: { color: '#8fa3a3', fontSize: 10, marginTop: 4 },
+  label: { color: '#123a3a', fontSize: 12, fontWeight: '600', textAlign: 'center' },
+  badge: { color: '#667777', fontSize: 10, marginTop: 4 },
 });

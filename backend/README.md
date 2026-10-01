@@ -78,7 +78,10 @@ DB_USERNAME=postgres
 DB_PASSWORD=ton_mot_de_passe_postgres
 DB_NAME=voya_db
 JWT_SECRET=une_valeur_secrete_forte
+MAPS_API_KEY=cle_google_places_restreinte
 ```
+
+Active Places API (New) dans Google Cloud et restreins cette clé aux API nécessaires. La route `GET /maps/places` l'utilise côté serveur; ne l'expose pas dans l'application mobile.
 
 ## Lancer le projet
 

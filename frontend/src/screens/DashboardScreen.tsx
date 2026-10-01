@@ -113,6 +113,15 @@ export default function DashboardScreen({ navigation, route }: Props) {
           </View>
         </View>
 
+        <Pressable style={styles.mapButton} onPress={() => navigation.navigate('Maps', { destination: voyage.destination })}>
+          <View style={styles.mapButtonIcon}><Ionicons name="map-outline" size={20} color={ACCENT} /></View>
+          <View style={styles.mapButtonText}>
+            <Text style={styles.mapButtonTitle}>Carte du voyage</Text>
+            <Text style={styles.mapButtonSubtitle}>Hébergements, services et lieux à proximité</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color="#8fa3a3" />
+        </Pressable>
+
         <View style={styles.grid}>
           <Pressable
             style={styles.statCard}
@@ -201,6 +210,11 @@ const styles = StyleSheet.create({
   heroDivider: { height: 1, backgroundColor: '#1f4d4d', marginBottom: 14 },
   heroFooter: { flexDirection: 'row', justifyContent: 'space-between' },
   heroFooterText: { color: '#c9d6d6', fontSize: 13, fontWeight: '500' },
+  mapButton: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#123a3a', borderRadius: 14, padding: 14, marginBottom: 22, ...cardShadow },
+  mapButtonIcon: { width: 42, height: 42, borderRadius: 12, backgroundColor: '#1f4d4d', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+  mapButtonText: { flex: 1 },
+  mapButtonTitle: { color: '#ffffff', fontSize: 15, fontWeight: '700', marginBottom: 3 },
+  mapButtonSubtitle: { color: '#8fa3a3', fontSize: 12 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 26 },
   statCard: { width: '48%', backgroundColor: '#ffffff', borderRadius: 18, padding: 18, marginBottom: 14, ...cardShadow },
   statIconWrap: { width: 30, height: 30, borderRadius: 15, backgroundColor: '#fdf1e4', justifyContent: 'center', alignItems: 'center', marginBottom: 10 },

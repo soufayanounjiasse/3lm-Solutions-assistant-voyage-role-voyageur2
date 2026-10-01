@@ -53,13 +53,13 @@ export default function RegisterScreen({ navigation, onAuthenticated }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0d2b2b' },
+  container: { flex: 1, backgroundColor: '#f8f6ef' },
   content: { flex: 1, justifyContent: 'center', padding: 24 },
-  title: { color: '#fff', fontSize: 28, fontWeight: '800', marginBottom: 8 },
-  subtitle: { color: '#a7baba', fontSize: 15, marginBottom: 24 },
-  input: { backgroundColor: '#123a3a', color: '#fff', borderWidth: 1, borderColor: '#1f4d4d', borderRadius: 12, padding: 14, marginBottom: 10, fontSize: 15 },
+  title: { color: '#123a3a', fontSize: 28, fontWeight: '800', marginBottom: 8 },
+  subtitle: { color: '#667777', fontSize: 15, marginBottom: 24 },
+  input: { backgroundColor: '#fff', color: '#123a3a', borderWidth: 1, borderColor: '#e3dacb', borderRadius: 12, padding: 14, marginBottom: 10, fontSize: 15 },
   button: { backgroundColor: ACCENT, borderRadius: 12, minHeight: 52, alignItems: 'center', justifyContent: 'center', marginTop: 8 },
   buttonText: { color: '#0d2b2b', fontWeight: '800', fontSize: 16 },
   linkButton: { alignItems: 'center', padding: 18 },
-  link: { color: ACCENT, fontWeight: '700' },
+  link: { color: '#123a3a', fontWeight: '700' },
 });

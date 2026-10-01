@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView, ScrollView, View, Text, TextInput, StyleSheet, Pressable, ActivityIndicator, Alert } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { fetchPreferences, updatePreferences } from '../api/voya';
 import { useLanguage } from '../i18n';
 
 const ACCENT = '#f4a259';
 
-type Props = { token: string; userId: string };
+type Props = { token: string; userId: string; navigation?: { goBack: () => void } };
 
 const TRIP_TYPES = ['TOURISME', 'AFFAIRES', 'FAMILLE', 'ETUDIANT'] as const;
 
-export default function PreferencesScreen({ token, userId }: Props) {
+export default function PreferencesScreen({ token, userId, navigation }: Props) {
   const { t } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -70,7 +71,12 @@ export default function PreferencesScreen({ token, userId }: Props) {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.header}>{t('preferences')}</Text>
+        <View style={styles.headerRow}>
+          <Pressable style={styles.backButton} onPress={() => navigation?.goBack?.()}>
+            <Ionicons name="chevron-back" size={22} color="#123a3a" />
+          </Pressable>
+          <Text style={styles.header}>{t('preferences')}</Text>
+        </View>
 
         <Text style={styles.label}>{t('tripType')}</Text>
         <View style={styles.typeRow}>
@@ -125,16 +131,18 @@ export default function PreferencesScreen({ token, userId }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0d2b2b' },
+  container: { flex: 1, backgroundColor: '#f8f6ef' },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   content: { padding: 20 },
-  header: { color: '#ffffff', fontSize: 22, fontWeight: '800', marginBottom: 20 },
-  label: { color: '#8fa3a3', fontSize: 13, marginBottom: 8, marginTop: 14 },
-  input: { backgroundColor: '#123a3a', color: '#fff', borderWidth: 1, borderColor: '#1f4d4d', borderRadius: 12, padding: 15, fontSize: 15 },
+  headerRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 18 },
+  backButton: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#fff', borderWidth: 1, borderColor: '#e3dacb', alignItems: 'center', justifyContent: 'center' },
+  header: { color: '#123a3a', fontSize: 22, fontWeight: '800', marginLeft: 12 },
+  label: { color: '#667777', fontSize: 13, marginBottom: 8, marginTop: 14 },
+  input: { backgroundColor: '#fff', color: '#123a3a', borderWidth: 1, borderColor: '#e3dacb', borderRadius: 12, padding: 15, fontSize: 15 },
   typeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  typeChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: '#123a3a' },
-  typeChipActive: { backgroundColor: ACCENT },
-  typeChipText: { color: '#c9d6d6', fontSize: 13, fontWeight: '600' },
+  typeChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: '#fff', borderWidth: 1, borderColor: '#e3dacb' },
+  typeChipActive: { backgroundColor: ACCENT, borderColor: ACCENT },
+  typeChipText: { color: '#123a3a', fontSize: 13, fontWeight: '600' },
   typeChipTextActive: { color: '#0d2b2b' },
   button: { backgroundColor: ACCENT, borderRadius: 12, minHeight: 52, alignItems: 'center', justifyContent: 'center', marginTop: 26 },
   buttonText: { color: '#0d2b2b', fontWeight: '800', fontSize: 16 },

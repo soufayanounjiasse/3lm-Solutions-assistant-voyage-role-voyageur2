@@ -84,12 +84,12 @@ export class UserService {
       return { user: this.sanitize(identity.user), accessToken: this.issueToken(identity.user) };
     }
 
-    // Première connexion via ce fournisseur : créer le compte utilisateur associé
-    const user = this.userRepository.create({
-      email: dto.email,
-      prenom: dto.prenom ?? 'Utilisateur',
-      nom: dto.nom ?? dto.provider,
-    });
+const fallbackEmail = `${dto.provider.toLowerCase()}-${dto.providerUserId}@voya.local`;
+const user = this.userRepository.create({
+  email: dto.email ?? fallbackEmail,
+  prenom: dto.prenom ?? 'Utilisateur',
+  nom: dto.nom ?? dto.provider,
+});
     const savedUser = await this.userRepository.save(user);
 
     identity = this.identityRepository.create({

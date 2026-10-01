@@ -1,104 +1,156 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, RefreshControl, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import {
+  SafeAreaView, ScrollView, View, Text, StyleSheet,
+  ActivityIndicator, Pressable, Modal, TextInput, Alert,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { fetchWallet } from '../api/voya';
-import { RootStackParamList, Wallet } from '../types';
+import { fetchPaymentReceipts, fetchPaymentWallet, topUpPaymentWallet } from '../api/voya';
+import { TravelWallet, PaymentReceipt } from '../types';
 
 const ACCENT = '#f4a259';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Wallet'>;
+type Props = { userId: string };
 
-type SectionProps = { icon: keyof typeof Ionicons.glyphMap; title: string; count: number; children: React.ReactNode };
-
-function Section({ icon, title, count, children }: SectionProps) {
-  return (
-    <View style={styles.section}>
-      <View style={styles.sectionHeader}>
-        <View style={styles.sectionTitle}>
-          <Ionicons name={icon} size={20} color={ACCENT} />
-          <Text style={styles.heading}>{title}</Text>
-        </View>
-        <Text style={styles.count}>{count}</Text>
-      </View>
-      {children}
-    </View>
-  );
-}
-
-export default function WalletScreen({ route, navigation }: Props) {
-  const { voyageId, destination } = route.params;
-  const [wallet, setWallet] = useState<Wallet | null>(null);
+export default function TravelWalletScreen({ userId }: Props) {
+  const [wallet, setWallet] = useState<TravelWallet | null>(null);
+  const [receipts, setReceipts] = useState<PaymentReceipt[]>([]);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [offline, setOffline] = useState(false);
+  const [rechargeVisible, setRechargeVisible] = useState(false);
+  const [amount, setAmount] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-  const load = useCallback(async (refresh = false) => {
+  const load = useCallback(async () => {
     try {
-      const result = await fetchWallet(voyageId);
-      setWallet(result);
-      setOffline(false);
+      const [w, r] = await Promise.all([fetchPaymentWallet(userId), fetchPaymentReceipts(userId)]);
+      setWallet(w);
+      setReceipts(r);
     } catch {
-      setOffline(true);
+      // écran vide géré ci-dessous
     } finally {
       setLoading(false);
-      setRefreshing(false);
     }
-  }, [voyageId]);
+  }, [userId]);
 
   useEffect(() => {
-    navigation.setOptions({ title: `Wallet · ${destination}` });
-    void load();
-  }, [destination, load, navigation]);
+    load();
+  }, [load]);
+
+  const handleRecharge = async () => {
+    const value = Number(amount);
+    if (!value || value <= 0) {
+      Alert.alert('Montant invalide', 'Renseigne un montant positif.');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await topUpPaymentWallet(userId, value, wallet?.currency ?? 'EUR');
+      setRechargeVisible(false);
+      setAmount('');
+      await load();
+    } catch (e: any) {
+      Alert.alert('Erreur', e.message ?? 'Le rechargement a échoué.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const formatDate = (iso: string) =>
+    new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
 
   if (loading) {
-    return <SafeAreaView style={styles.container}><View style={styles.centered}><ActivityIndicator size="large" color={ACCENT} /></View></SafeAreaView>;
-  }
-
-  if (!wallet) {
-    return <SafeAreaView style={styles.container}><View style={styles.centered}><Text style={styles.empty}>Wallet indisponible hors connexion.</Text></View></SafeAreaView>;
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color={ACCENT} />
+        </View>
+      </SafeAreaView>
+    );
   }
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView
-        contentContainerStyle={styles.content}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); void load(true); }} tintColor={ACCENT} />}
-      >
-        <View style={styles.hero}>
-          <Ionicons name="wallet-outline" size={30} color={ACCENT} />
-          <View style={styles.heroText}><Text style={styles.title}>{wallet.voyage.destination}</Text><Text style={styles.muted}>{wallet.voyage.dateDebut} → {wallet.voyage.dateFin}</Text></View>
+      <ScrollView contentContainerStyle={styles.content}>
+        <View style={styles.balanceCard}>
+          <Ionicons name="wallet-outline" size={28} color={ACCENT} />
+          <Text style={styles.balanceLabel}>Solde disponible</Text>
+          <Text style={styles.balanceValue}>
+            {wallet ? `${Number(wallet.balance).toFixed(2)} ${wallet.currency}` : '—'}
+          </Text>
+          <Pressable style={styles.rechargeButton} onPress={() => setRechargeVisible(true)}>
+            <Ionicons name="add-circle-outline" size={18} color="#0d2b2b" />
+            <Text style={styles.rechargeButtonText}>Recharger</Text>
+          </Pressable>
         </View>
-        {offline && <Text style={styles.offline}><Ionicons name="cloud-offline-outline" size={15} color={ACCENT} /> Données locales</Text>}
-        <Section icon="airplane-outline" title="Billets et réservations" count={wallet.reservations.length}>
-          {wallet.reservations.length === 0 ? <Text style={styles.empty}>Aucune réservation</Text> : wallet.reservations.map((item) => <View style={styles.item} key={item.id}><Text style={styles.itemTitle}>{item.fournisseur}</Text><Text style={styles.muted}>{item.type} · {item.reference}</Text></View>)}
-        </Section>
-        <Section icon="document-text-outline" title="Documents importants" count={wallet.documents.length}>
-          {wallet.documents.length === 0 ? <Text style={styles.empty}>Aucun document</Text> : wallet.documents.map((item) => <Pressable style={styles.item} key={item.id} onPress={() => navigation.navigate('DocumentDetail', { documentId: item.id })}><Text style={styles.itemTitle}>{item.nomFichier}</Text><Text style={styles.muted}>{item.type}</Text></Pressable>)}
-        </Section>
-        <Section icon="cellular-outline" title="Informations eSIM" count={wallet.esims.length}>
-          {wallet.esims.length === 0 ? <Text style={styles.empty}>Aucune eSIM associée</Text> : wallet.esims.map((item) => <View style={styles.item} key={item.id}><Text style={styles.itemTitle}>{item.country} · {item.dataMb / 1024} Go</Text><Text style={styles.muted}>{item.status} · {item.dataUsedMb} Mo utilisés</Text></View>)}
-        </Section>
+
+        <Text style={styles.sectionTitle}>Reçus</Text>
+        {receipts.length === 0 ? (
+          <Text style={styles.emptyText}>Aucune transaction pour l'instant.</Text>
+        ) : (
+          receipts.map((r) => (
+            <View key={r.id} style={styles.receiptItem}>
+              <View style={styles.receiptRow}>
+                <Text style={styles.receiptService}>{r.serviceType}</Text>
+                <Text style={[styles.receiptAmount, r.status === 'FAILED' && styles.receiptFailed]}>
+                  {r.status === 'FAILED' ? 'Échoué' : `-${Number(r.amount).toFixed(2)} ${r.currency}`}
+                </Text>
+              </View>
+              <Text style={styles.receiptMeta}>{r.receiptNumber} · {formatDate(r.createdAt)}</Text>
+            </View>
+          ))
+        )}
       </ScrollView>
+
+      <Modal visible={rechargeVisible} transparent animationType="fade" onRequestClose={() => setRechargeVisible(false)}>
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalCard}>
+            <Text style={styles.modalTitle}>Recharger le Wallet</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Montant"
+              placeholderTextColor="#8fa3a3"
+              keyboardType="numeric"
+              value={amount}
+              onChangeText={setAmount}
+            />
+            <View style={styles.modalActions}>
+              <Pressable style={styles.cancelButton} onPress={() => setRechargeVisible(false)}>
+                <Text style={styles.cancelButtonText}>Annuler</Text>
+              </Pressable>
+              <Pressable style={styles.submitButton} onPress={handleRecharge} disabled={submitting}>
+                {submitting ? <ActivityIndicator size="small" color="#0d2b2b" /> : <Text style={styles.submitButtonText}>Confirmer</Text>}
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0d2b2b' },
-  content: { padding: 16, paddingBottom: 32, gap: 14 },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
-  hero: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#123a3a', borderRadius: 16, padding: 18 },
-  heroText: { marginLeft: 14, flex: 1 },
-  title: { color: '#fff', fontSize: 20, fontWeight: '800' },
-  heading: { color: '#fff', fontSize: 16, fontWeight: '800', marginLeft: 8 },
-  muted: { color: '#9bb0b0', fontSize: 13, marginTop: 4 },
-  offline: { color: ACCENT, fontSize: 13 },
-  section: { backgroundColor: '#123a3a', borderRadius: 16, padding: 16 },
-  sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },
-  sectionTitle: { flexDirection: 'row', alignItems: 'center' },
-  count: { color: ACCENT, fontWeight: '800' },
-  item: { borderTopWidth: 1, borderTopColor: '#1f4d4d', paddingVertical: 11 },
-  itemTitle: { color: '#fff', fontWeight: '700' },
-  empty: { color: '#9bb0b0', fontSize: 13 },
+  centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  content: { padding: 20 },
+  balanceCard: { backgroundColor: '#123a3a', borderRadius: 20, padding: 24, alignItems: 'center', marginBottom: 26 },
+  balanceLabel: { color: '#8fa3a3', fontSize: 13, marginTop: 10 },
+  balanceValue: { color: '#ffffff', fontSize: 32, fontWeight: '800', marginTop: 4, marginBottom: 16 },
+  rechargeButton: { flexDirection: 'row', backgroundColor: ACCENT, borderRadius: 12, paddingVertical: 10, paddingHorizontal: 18, alignItems: 'center' },
+  rechargeButtonText: { color: '#0d2b2b', fontWeight: '700', marginLeft: 6 },
+  sectionTitle: { color: '#ffffff', fontSize: 18, fontWeight: '800', marginBottom: 12 },
+  emptyText: { color: '#8fa3a3', fontSize: 14 },
+  receiptItem: { backgroundColor: '#123a3a', borderRadius: 14, padding: 14, marginBottom: 10 },
+  receiptRow: { flexDirection: 'row', justifyContent: 'space-between' },
+  receiptService: { color: '#ffffff', fontSize: 15, fontWeight: '700' },
+  receiptAmount: { color: ACCENT, fontSize: 15, fontWeight: '700' },
+  receiptFailed: { color: '#f28b82' },
+  receiptMeta: { color: '#8fa3a3', fontSize: 12, marginTop: 4 },
+  modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', padding: 24 },
+  modalCard: { backgroundColor: '#123a3a', borderRadius: 18, padding: 20 },
+  modalTitle: { color: '#ffffff', fontSize: 16, fontWeight: '700', marginBottom: 14 },
+  input: { backgroundColor: '#1f4d4d', borderRadius: 12, padding: 14, color: '#ffffff', fontSize: 15, marginBottom: 16 },
+  modalActions: { flexDirection: 'row', gap: 10 },
+  cancelButton: { flex: 1, paddingVertical: 12, borderRadius: 12, alignItems: 'center', backgroundColor: '#1f4d4d' },
+  cancelButtonText: { color: '#c9d6d6', fontWeight: '600' },
+  submitButton: { flex: 1, paddingVertical: 12, borderRadius: 12, alignItems: 'center', backgroundColor: ACCENT },
+  submitButtonText: { color: '#0d2b2b', fontWeight: '700' },
 });

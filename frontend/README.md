@@ -13,6 +13,10 @@ Ce dossier fait partie du monorepo voya-app, aux côtés de backend/. Voir le RE
 | Navigation | React Navigation (Native Stack + Bottom Tabs) |
 | Icônes | @expo/vector-icons |
 | Rendu web (dev) | react-native-web |
+
+## Cartographie
+
+La recherche Places passe par le backend (`MAPS_API_KEY`, voir `../backend/README.md`). Pour afficher les tuiles de carte natives, définir `GOOGLE_MAPS_API_KEY` dans l'environnement avant `npx expo prebuild` ou la compilation EAS. Restreindre cette clé aux identifiants Android/iOS de l'application et au SDK Maps correspondant.
 Prérequis
 Node.js (LTS, v20+)
 Le backend (../backend) doit tourner sur http://localhost:3000 — voir le README du backend pour le démarrer (PostgreSQL + npm run start:dev).

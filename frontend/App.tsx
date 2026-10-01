@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
+import { getFocusedRouteNameFromRoute, NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -11,6 +11,7 @@ import UnavailableScreen from './src/screens/UnavailableScreen';
 import NewVoyageScreen from './src/screens/NewVoyageScreen';
 import VoyagesListScreen from './src/screens/VoyagesListScreen';
 import DashboardScreen from './src/screens/DashboardScreen';
+import MapsScreen from './src/screens/MapsScreen';
 import ReservationsScreen from './src/screens/ReservationsScreen';
 import ReservationDetailScreen from './src/screens/ReservationDetailScreen';
 import DocumentsScreen from './src/screens/DocumentsScreen';
@@ -25,64 +26,91 @@ import LanguageScreen from './src/screens/LanguageScreen';
 import PreferencesScreen from './src/screens/PreferencesScreen';
 import AssistantScreen from './src/screens/AssistantScreen';
 import EsimScreen from './src/screens/EsimScreen';
+import HotelScreen from './src/screens/HotelScreen';
+import MarketplaceScreen from './src/screens/MarketplaceScreen';
+import EmergencyScreen from './src/screens/EmergencyScreen';
+import TransportScreen from './src/screens/TransportScreen';
 import WalletScreen from './src/screens/WalletScreen';
 import PaymentScreen from './src/screens/PaymentScreen';
 import { LanguageProvider } from './src/i18n';
-import { AccessibilityProvider } from './src/accessibility';
 
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator();
 
 const ACCENT = '#f4a259';
+const TAB_BAR_STYLE = {
+  backgroundColor: '#123a3a',
+  borderTopColor: '#1f4d4d',
+  height: 56,
+  paddingBottom: 8,
+  paddingTop: 6,
+};
 
 const theme = {
   ...DefaultTheme,
   colors: {
     ...DefaultTheme.colors,
-    background: '#0d2b2b',
-    card: '#123a3a',
-    text: '#ffffff',
-    border: '#1f4d4d',
+    background: '#f8f6ef',
+    card: '#ffffff',
+    text: '#123a3a',
+    border: '#e3dacb',
     primary: ACCENT,
   },
 };
 
 function MenuStack({ userId }: { userId: string }) {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#f8f6ef' } }}>
       <Stack.Screen name="MainMenu" component={MainMenuScreen} />
       <Stack.Screen name="Unavailable" component={UnavailableScreen} options={{ headerShown: true, title: '' }} />
       <Stack.Screen name="VoyagesList" component={VoyagesListScreen} options={{ headerShown: true, title: 'Mes voyages' }} />
       <Stack.Screen name="Dashboard" component={DashboardScreen} options={{ headerShown: true, title: 'Voyage' }} />
+      <Stack.Screen name="Maps" component={MapsScreen} options={{ headerShown: true, title: 'Carte du voyage' }} />
       <Stack.Screen name="Reservations" component={ReservationsScreen} options={{ headerShown: true }} />
       <Stack.Screen name="ReservationDetail" component={ReservationDetailScreen} options={{ headerShown: true, title: 'Détail réservation' }} />
       <Stack.Screen name="Documents" component={DocumentsScreen} options={{ headerShown: true }} />
       <Stack.Screen name="DocumentDetail" component={DocumentDetailScreen} options={{ headerShown: true, title: 'Détail document' }} />
       <Stack.Screen name="SelectVoyageForReservation" component={SelectVoyageForReservationScreen} options={{ headerShown: true, title: 'Sélectionner un voyage' }} />
-      <Stack.Screen name="Assistant" component={AssistantScreen} options={{ headerShown: true, title: 'Assistant IA' }} />
-      <Stack.Screen name="Esim" options={{ headerShown: true, title: 'eSIM' }}>
+      <Stack.Screen name="Assistant" component={AssistantScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="Esim" options={{ headerShown: false }}>
         {() => <EsimScreen userId={userId} />}
       </Stack.Screen>
-      <Stack.Screen name="Wallet" component={WalletScreen} options={{ headerShown: true }} />
-      <Stack.Screen name="Payment" options={{ headerShown: true, title: 'Paiement' }}>
-        {() => <PaymentScreen userId={userId} />}
+      <Stack.Screen name="Hotel" options={{ headerShown: true, title: 'Hébergement' }}>
+        {() => <HotelScreen />}
       </Stack.Screen>
+      <Stack.Screen name="Marketplace" options={{ headerShown: true, title: 'Marketplace' }}>
+        {() => <MarketplaceScreen />}
+      </Stack.Screen>
+      <Stack.Screen name="Emergency" options={{ headerShown: true, title: 'Urgence' }}>
+        {() => <EmergencyScreen />}
+      </Stack.Screen>
+      <Stack.Screen name="Transport" options={{ headerShown: true, title: 'Chauffeurs' }}>
+        {() => <TransportScreen userId={userId} />}
+      </Stack.Screen>
+      <Stack.Screen name="Wallet" options={{ headerShown: true, title: 'Travel Wallet' }}>
+        {() => <WalletScreen userId={userId} />}
+      </Stack.Screen>
+       <Stack.Screen name="Payment" options={{ headerShown: false }}>
+      {(props) => <PaymentScreen {...props} userId={userId} />}
+        </Stack.Screen>
     </Stack.Navigator>
   );
 }
 
 function SettingsStack({ token, userId, onLogout }: { token: string; userId: string; onLogout: () => Promise<void> }) {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: true, headerStyle: { backgroundColor: '#123a3a' }, headerTintColor: '#fff' }}>
+    <Stack.Navigator screenOptions={{ headerShown: true, headerStyle: { backgroundColor: '#f8f6ef' }, headerTintColor: '#123a3a', contentStyle: { backgroundColor: '#f8f6ef' } }}>
       <Stack.Screen name="SettingsList" component={SettingsListScreen} options={{ headerShown: false }} />
       <Stack.Screen name="Unavailable" options={{ title: '' }} component={UnavailableScreen} />
-      <Stack.Screen name="Language" component={LanguageScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="Language" options={{ headerShown: false }}>
+        {(props) => <LanguageScreen {...props} />}
+      </Stack.Screen>
       <Stack.Screen name="ProfileDetail" options={{ headerShown: false }}>
-        {() => <ProfileScreen token={token} onLogout={onLogout} />}
+        {(props) => <ProfileScreen {...props} token={token} onLogout={onLogout} />}
       </Stack.Screen>
       <Stack.Screen name="Preferences" options={{ title: '' }}>
-      {() => <PreferencesScreen token={token} userId={userId} />}
+        {(props) => <PreferencesScreen {...props} token={token} userId={userId} />}
       </Stack.Screen>
     </Stack.Navigator>
   );
@@ -97,13 +125,7 @@ function AppTabs({ token, userId, onLogout }: { token: string; userId: string; o
         headerShown: false,
         tabBarActiveTintColor: ACCENT,
         tabBarInactiveTintColor: '#8fa3a3',
-        tabBarStyle: {
-          backgroundColor: '#123a3a',
-          borderTopColor: '#1f4d4d',
-          height: 56 + insets.bottom,
-          paddingBottom: Math.max(insets.bottom, 8),
-          paddingTop: 6,
-        },
+        tabBarStyle: { ...TAB_BAR_STYLE, height: 56 + insets.bottom, paddingBottom: Math.max(insets.bottom, 8) },
         tabBarLabelStyle: { fontSize: 12, fontWeight: '600' },
       }}
     >
@@ -120,11 +142,14 @@ function AppTabs({ token, userId, onLogout }: { token: string; userId: string; o
       <Tab.Screen
         name="Menu"
         children={() => <MenuStack userId={userId} />}
-        options={{
+        options={({ route }) => ({
+          tabBarStyle: ['Esim', 'Assistant'].includes(getFocusedRouteNameFromRoute(route) ?? '')
+            ? { display: 'none' }
+            : { ...TAB_BAR_STYLE, height: 56 + insets.bottom, paddingBottom: Math.max(insets.bottom, 8) },
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons name={focused ? 'grid' : 'grid-outline'} size={size} color={color} />
           ),
-        }}
+        })}
         listeners={({ navigation }) => ({
           tabPress: () => {
             navigation.navigate('Menu', { screen: 'MainMenu' });
@@ -155,8 +180,15 @@ export default function App() {
       AsyncStorage.getItem('voya_access_token'),
       AsyncStorage.getItem('voya_user_id'),
     ]).then(([storedToken, storedUserId]) => {
-      setToken(storedToken);
-      setUserId(storedUserId);
+      const isUuid = Boolean(storedUserId && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(storedUserId));
+      if (storedToken && isUuid) {
+        setToken(storedToken);
+        setUserId(storedUserId);
+      } else {
+        void AsyncStorage.multiRemove(['voya_access_token', 'voya_user_id']);
+        setToken(null);
+        setUserId(null);
+      }
     }).finally(() => setLoading(false));
   }, []);
 
@@ -180,9 +212,8 @@ export default function App() {
     return (
       <SafeAreaProvider>
         <LanguageProvider>
-          <AccessibilityProvider>
           <NavigationContainer theme={theme}>
-            <Stack.Navigator screenOptions={{ headerShown: true, headerStyle: { backgroundColor: '#123a3a' }, headerTintColor: '#fff' }}>
+            <Stack.Navigator screenOptions={{ headerShown: true, headerStyle: { backgroundColor: '#f8f6ef' }, headerTintColor: '#123a3a', contentStyle: { backgroundColor: '#f8f6ef' } }}>
               <Stack.Screen name="Onboarding" component={OnboardingScreen} options={{ headerShown: false }} />
               <Stack.Screen name="Login" options={{ title: 'Connexion' }}>
                 {(props) => <LoginScreen {...props} onAuthenticated={authenticate} />}
@@ -192,7 +223,6 @@ export default function App() {
               </Stack.Screen>
             </Stack.Navigator>
           </NavigationContainer>
-          </AccessibilityProvider>
         </LanguageProvider>
       </SafeAreaProvider>
     );
@@ -201,11 +231,9 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <LanguageProvider>
-        <AccessibilityProvider>
         <NavigationContainer theme={theme}>
           <AppTabs token={token} userId={userId} onLogout={logout} />
         </NavigationContainer>
-        </AccessibilityProvider>
       </LanguageProvider>
     </SafeAreaProvider>
   );

@@ -1,6 +1,7 @@
-import { Body, Controller, Get, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CreatePaymentDto } from './dto/create-payment.dto';
+import { TopUpWalletDto } from './dto/top-up-wallet.dto';
 import { UpdatePaymentPreferenceDto } from './dto/update-payment-preference.dto';
 import { PaymentService } from './payment.service';
 
@@ -15,13 +16,18 @@ export class PaymentController {
   }
 
   @Get('receipts')
-  receipts(@Query('userId') userId: string) {
+  receipts(@Query('userId', new ParseUUIDPipe()) userId: string) {
     return this.paymentService.listReceipts(userId);
   }
 
   @Get('wallet')
-  wallet(@Query('userId') userId: string) {
+  wallet(@Query('userId', new ParseUUIDPipe()) userId: string) {
     return this.paymentService.getWallet(userId);
+  }
+
+  @Post('wallet/top-up')
+  topUpWallet(@Body() dto: TopUpWalletDto) {
+    return this.paymentService.topUpWallet(dto);
   }
 
   @Patch('wallet/method')

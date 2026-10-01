@@ -3,7 +3,8 @@ import { SafeAreaView, View, Text, TextInput, Pressable, StyleSheet, ActivityInd
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList, User } from '../types';
-import { login,socialLogin } from '../api/voya';
+import { socialLogin } from '../api/voya';
+// import { login } from '../api/voya';
 //import { socialLogin } from '../api/voya';
 import { useLanguage } from '../i18n';
 
@@ -24,8 +25,19 @@ export default function LoginScreen({ navigation, onAuthenticated }: Props) {
     }
     setLoading(true);
     try {
-      const result = await login({ identifiant: identifiant.trim(), password });
-      await onAuthenticated(result.accessToken, result.user);
+      // Vérification réelle avec la base de données, à réactiver lorsque nécessaire :
+      // const result = await login({ identifiant: identifiant.trim(), password });
+      // await onAuthenticated(result.accessToken, result.user);
+
+      await onAuthenticated('demo-access-token', {
+        id: 'demo-user',
+        email: identifiant.includes('@') ? identifiant.trim() : undefined,
+        telephone: identifiant.includes('@') ? undefined : identifiant.trim(),
+        prenom: 'Utilisateur',
+        nom: 'Demo',
+        langue: 'fr',
+        statut: 'ACTIF',
+      });
     } catch (error: any) {
       Alert.alert(t('connectionError'), error.message ?? t('genericError'));
     } finally {
@@ -82,20 +94,20 @@ export default function LoginScreen({ navigation, onAuthenticated }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0d2b2b' },
+  container: { flex: 1, backgroundColor: '#f8f6ef' },
   content: { flex: 1, justifyContent: 'center', padding: 24 },
   logo: { width: 64, height: 64, borderRadius: 20, backgroundColor: ACCENT, alignItems: 'center', justifyContent: 'center', marginBottom: 22 },
-  title: { color: '#fff', fontSize: 28, fontWeight: '800', marginBottom: 8 },
-  subtitle: { color: '#a7baba', fontSize: 15, marginBottom: 28 },
-  input: { backgroundColor: '#123a3a', color: '#fff', borderWidth: 1, borderColor: '#1f4d4d', borderRadius: 12, padding: 15, marginBottom: 12, fontSize: 15 },
+  title: { color: '#123a3a', fontSize: 28, fontWeight: '800', marginBottom: 8 },
+  subtitle: { color: '#667777', fontSize: 15, marginBottom: 28 },
+  input: { backgroundColor: '#fff', color: '#123a3a', borderWidth: 1, borderColor: '#e3dacb', borderRadius: 12, padding: 15, marginBottom: 12, fontSize: 15 },
   button: { backgroundColor: ACCENT, borderRadius: 12, minHeight: 52, alignItems: 'center', justifyContent: 'center', marginTop: 10 },
   buttonText: { color: '#0d2b2b', fontWeight: '800', fontSize: 16 },
   linkButton: { alignItems: 'center', padding: 18 },
-  link: { color: ACCENT, fontWeight: '700' },
-  orText: { color: '#8fa3a3', textAlign: 'center', marginVertical: 16, fontSize: 13 },
-socialRow: { flexDirection: 'row', justifyContent: 'center', gap: 14, marginBottom: 10 },
-socialButton: {
-  width: 52, height: 52, borderRadius: 26, backgroundColor: '#123a3a',
-  borderWidth: 1, borderColor: '#1f4d4d', alignItems: 'center', justifyContent: 'center',
-},
+  link: { color: '#123a3a', fontWeight: '700' },
+  orText: { color: '#667777', textAlign: 'center', marginVertical: 16, fontSize: 13 },
+  socialRow: { flexDirection: 'row', justifyContent: 'center', gap: 14, marginBottom: 10 },
+  socialButton: {
+    width: 52, height: 52, borderRadius: 26, backgroundColor: '#123a3a',
+    borderWidth: 1, borderColor: '#1f4d4d', alignItems: 'center', justifyContent: 'center',
+  },
 });

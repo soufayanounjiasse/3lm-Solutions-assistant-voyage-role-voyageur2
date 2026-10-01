@@ -1,17 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { ActivityIndicator, FlatList, KeyboardAvoidingView, Platform, Pressable, SafeAreaView, StatusBar, StyleSheet, Text, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { chatAssistant, AssistantMessage } from '../api/voya';
 import { useLanguage } from '../i18n';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../types';
 
 type Message = AssistantMessage & { id: string };
-type Props = NativeStackScreenProps<RootStackParamList, 'Assistant'>;
+
+type Props = {
+  navigation?: { goBack: () => void };
+};
 
 const ACCENT = '#f4a259';
 
-export default function AssistantScreen({ navigation, route }: Props) {
+export default function AssistantScreen({ navigation }: Props) {
   const { t } = useLanguage();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -23,17 +24,6 @@ export default function AssistantScreen({ navigation, route }: Props) {
     { id: 'sample-user-contact', role: 'user', content: t('assistantSampleContact') },
     { id: 'sample-assistant-contact', role: 'assistant', content: t('assistantSampleCall') },
   ];
-
-  useEffect(() => {
-    navigation.setOptions({ headerShown: false });
-    const tabNavigation = navigation.getParent();
-    tabNavigation?.setOptions({ tabBarStyle: { display: 'none' } });
-    return () => tabNavigation?.setOptions({ tabBarStyle: undefined });
-  }, [navigation]);
-
-  useEffect(() => {
-    if (route.params?.initialMessage) setInput(route.params.initialMessage);
-  }, [route.params?.initialMessage]);
 
   const sendMessage = async () => {
     const content = input.trim();
@@ -59,7 +49,12 @@ export default function AssistantScreen({ navigation, route }: Props) {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#f8f6ef" />
       <KeyboardAvoidingView style={styles.content} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <View style={styles.brandRow}><Text style={styles.brand}>VOYA · FR → TN</Text></View>
+        <View style={styles.brandRow}>
+          <Pressable style={styles.backButton} onPress={() => navigation?.goBack?.()}>
+            <Ionicons name="chevron-back" size={22} color="#123a3a" />
+          </Pressable>
+          <Text style={styles.brand}>VOYA · FR → TN</Text>
+        </View>
         <Text style={styles.welcome}>{t('assistantTitle')}</Text>
         <Text style={styles.subtitle}>{t('assistantSubtitle')}</Text>
         <FlatList
@@ -96,7 +91,8 @@ export default function AssistantScreen({ navigation, route }: Props) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8f6ef' },
   content: { flex: 1, width: '100%', maxWidth: 480, alignSelf: 'center', paddingHorizontal: 28, paddingTop: 8, paddingBottom: 12 },
-  brandRow: { minHeight: 24, alignItems: 'flex-end', justifyContent: 'center', marginBottom: 18 },
+  brandRow: { minHeight: 24, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 },
+  backButton: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#fff', borderWidth: 1, borderColor: '#e3dacb', alignItems: 'center', justifyContent: 'center' },
   brand: { color: '#123a3a', fontSize: 13, fontWeight: '600', letterSpacing: 0.4 },
   welcome: { color: '#123a3a', fontSize: 24, lineHeight: 30, fontWeight: '700' },
   subtitle: { color: '#667777', fontSize: 15, lineHeight: 21, marginBottom: 8 },
