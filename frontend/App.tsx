@@ -32,7 +32,9 @@ import EmergencyScreen from './src/screens/EmergencyScreen';
 import TransportScreen from './src/screens/TransportScreen';
 import WalletScreen from './src/screens/WalletScreen';
 import PaymentScreen from './src/screens/PaymentScreen';
+import SimpleModeScreen from './src/screens/SimpleModeScreen';
 import { LanguageProvider } from './src/i18n';
+import { AccessibilityProvider } from './src/accessibility';
 
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -59,10 +61,16 @@ const theme = {
   },
 };
 
-function MenuStack({ userId }: { userId: string }) {
+function MenuStack({ userId, token, onLogout }: { userId: string; token: string; onLogout: () => Promise<void> }) {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: '#f8f6ef' } }}>
-      <Stack.Screen name="MainMenu" component={MainMenuScreen} />
+      <Stack.Screen name="SimpleMode" component={SimpleModeScreen} options={{ headerShown: false }} />
+      <Stack.Screen name="MainMenu" options={{ headerShown: false }}>
+        {(props) => <MainMenuScreen {...props} token={token} onLogout={onLogout} />}
+      </Stack.Screen>
+      <Stack.Screen name="ProfileDetail" options={{ headerShown: false }}>
+        {(props) => <ProfileScreen {...props} token={token} onLogout={onLogout} />}
+      </Stack.Screen>
       <Stack.Screen name="Unavailable" component={UnavailableScreen} options={{ headerShown: true, title: '' }} />
       <Stack.Screen name="VoyagesList" component={VoyagesListScreen} options={{ headerShown: true, title: 'Mes voyages' }} />
       <Stack.Screen name="Dashboard" component={DashboardScreen} options={{ headerShown: true, title: 'Voyage' }} />
@@ -141,7 +149,7 @@ function AppTabs({ token, userId, onLogout }: { token: string; userId: string; o
       </Tab.Screen>
       <Tab.Screen
         name="Menu"
-        children={() => <MenuStack userId={userId} />}
+        children={() => <MenuStack userId={userId} token={token} onLogout={onLogout} />}
         options={({ route }) => ({
           tabBarStyle: ['Esim', 'Assistant'].includes(getFocusedRouteNameFromRoute(route) ?? '')
             ? { display: 'none' }
@@ -211,30 +219,34 @@ export default function App() {
   if (!token || !userId) {
     return (
       <SafeAreaProvider>
-        <LanguageProvider>
-          <NavigationContainer theme={theme}>
-            <Stack.Navigator screenOptions={{ headerShown: true, headerStyle: { backgroundColor: '#f8f6ef' }, headerTintColor: '#123a3a', contentStyle: { backgroundColor: '#f8f6ef' } }}>
-              <Stack.Screen name="Onboarding" component={OnboardingScreen} options={{ headerShown: false }} />
-              <Stack.Screen name="Login" options={{ title: 'Connexion' }}>
-                {(props) => <LoginScreen {...props} onAuthenticated={authenticate} />}
-              </Stack.Screen>
-              <Stack.Screen name="Register" options={{ title: 'Inscription' }}>
-                {(props) => <RegisterScreen {...props} onAuthenticated={authenticate} />}
-              </Stack.Screen>
-            </Stack.Navigator>
-          </NavigationContainer>
-        </LanguageProvider>
+        <AccessibilityProvider>
+          <LanguageProvider>
+            <NavigationContainer theme={theme}>
+              <Stack.Navigator screenOptions={{ headerShown: true, headerStyle: { backgroundColor: '#f8f6ef' }, headerTintColor: '#123a3a', contentStyle: { backgroundColor: '#f8f6ef' } }}>
+                <Stack.Screen name="Onboarding" component={OnboardingScreen} options={{ headerShown: false }} />
+                <Stack.Screen name="Login" options={{ title: 'Connexion' }}>
+                  {(props) => <LoginScreen {...props} onAuthenticated={authenticate} />}
+                </Stack.Screen>
+                <Stack.Screen name="Register" options={{ title: 'Inscription' }}>
+                  {(props) => <RegisterScreen {...props} onAuthenticated={authenticate} />}
+                </Stack.Screen>
+              </Stack.Navigator>
+            </NavigationContainer>
+          </LanguageProvider>
+        </AccessibilityProvider>
       </SafeAreaProvider>
     );
   }
 
   return (
     <SafeAreaProvider>
-      <LanguageProvider>
-        <NavigationContainer theme={theme}>
-          <AppTabs token={token} userId={userId} onLogout={logout} />
-        </NavigationContainer>
-      </LanguageProvider>
+      <AccessibilityProvider>
+        <LanguageProvider>
+          <NavigationContainer theme={theme}>
+            <AppTabs token={token} userId={userId} onLogout={logout} />
+          </NavigationContainer>
+        </LanguageProvider>
+      </AccessibilityProvider>
     </SafeAreaProvider>
   );
 }

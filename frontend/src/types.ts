@@ -88,11 +88,13 @@ export type HotelRecommendation = {
   id: string;
   name: string;
   location: string;
+  district: string;
   rating: number;
   nightPrice: number;
   currency: string;
   tags: string[];
   justification: string;
+  isRecommended: boolean;
 };
 
 export type MarketplaceOffer = {
@@ -122,6 +124,7 @@ export type RootStackParamList = {
   Language: undefined;
   Onboarding: undefined;
   MainMenu: undefined;
+  SimpleMode: undefined;
   Unavailable: { title: string };
   SelectVoyageForReservation: undefined;
   VoyagesList: { mode?: 'wallet' } | undefined;
